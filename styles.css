@@ -42,10 +42,6 @@ button {
   cursor: pointer;
 }
 
-.hidden {
-  display: none;
-}
-
 .app-shell {
   min-height: 100dvh;
   display: grid;
@@ -480,6 +476,10 @@ button {
   padding: 16px;
   background: rgba(16, 11, 7, 0.58);
   backdrop-filter: blur(4px);
+}
+
+.modal.hidden {
+  display: none;
 }
 
 .modal-card {
