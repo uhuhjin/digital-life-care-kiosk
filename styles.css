@@ -36,19 +36,12 @@ button {
 .page-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(280px, 360px) minmax(760px, 1fr);
-  gap: 24px;
+  grid-template-columns: 1fr;
   padding: 24px;
 }
 
 .guide-panel {
-  align-self: start;
-  position: sticky;
-  top: 24px;
-  padding: 24px;
-  border-radius: 24px;
-  background: rgba(255, 249, 239, 0.96);
-  box-shadow: var(--shadow);
+  display: none;
 }
 
 .guide-label {
