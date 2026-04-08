@@ -728,11 +728,8 @@ function renderProducts() {
     const fragment = productCardTemplate.content.cloneNode(true);
     const card = fragment.querySelector(".product-card");
     const visual = fragment.querySelector(".product-visual");
-    const badge = fragment.querySelector(".badge");
 
     applyDrinkVisual(visual, item.visualType);
-    badge.textContent = item.badge || "";
-    badge.classList.toggle("is-empty", item.badge === "");
     fragment.querySelector(".product-name").textContent = item.name;
     fragment.querySelector(".product-price").textContent = formatPrice(item.price);
 

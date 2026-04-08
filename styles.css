@@ -134,72 +134,44 @@ button {
 .menu-section {
   position: relative;
   min-height: 0;
-  display: grid;
-  grid-template-rows: 1fr 24px;
-  padding: 8px 10px 0 24px;
+  padding: 8px 10px 32px;
+  overflow: hidden;
   background: linear-gradient(180deg, #f2f2ee 0%, #f7f7f5 100%);
 }
 
-.side-badge {
-  position: absolute;
-  top: 20px;
-  left: 6px;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  padding: 8px 4px;
-  border-radius: 10px;
-  background: var(--red);
-  color: #fff;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-}
-
 .product-grid {
+  height: 100%;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
   grid-auto-rows: 1fr;
   gap: 8px;
   align-content: stretch;
+  overflow: hidden;
 }
 
 .product-card {
-  display: grid;
-  grid-template-rows: 18px 1fr 38px;
+  position: relative;
+  display: block;
   min-height: 0;
-  padding: 4px 5px 5px;
+  padding: 4px 4px 26px;
   border-radius: 6px;
   border: 1px solid #d8d8d8;
   background: #fff;
   text-align: center;
+  overflow: hidden;
 }
 
 .product-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.badge {
-  min-width: 20px;
-  min-height: 16px;
-  padding: 0 4px;
-  border-radius: 10px;
-  background: var(--red);
-  color: #fff;
-  font-size: 0.56rem;
-  font-weight: 800;
-  line-height: 16px;
-}
-
-.badge.is-empty {
-  visibility: hidden;
+  justify-content: flex-end;
 }
 
 .zoom-mark {
   color: #8c8c8c;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 700;
 }
 
@@ -211,8 +183,9 @@ button {
 }
 
 .product-visual {
-  width: 66px;
-  height: 58px;
+  width: 58px;
+  height: 48px;
+  margin: 4px auto 6px;
 }
 
 .option-visual {
@@ -390,19 +363,16 @@ button {
 }
 
 .product-meta {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 3px;
-  min-height: 0;
-  align-content: stretch;
+  display: block;
 }
 
 .product-name {
   display: -webkit-box;
-  min-height: 28px;
+  min-height: 26px;
   margin: 0;
+  padding: 0 2px;
   color: #666258;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   line-height: 1.1;
   word-break: keep-all;
   overflow: hidden;
@@ -412,13 +382,20 @@ button {
 
 .product-price {
   display: block;
-  align-self: end;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
   color: #b98a42;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   line-height: 1;
 }
 
 .grid-pagination {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
