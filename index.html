@@ -3,181 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>메가MGC커피 키오스크 프로토타입</title>
+  <title>메가MGC커피 키오스크 시안</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-shell">
-    <main class="kiosk-frame" aria-label="메가MGC커피 키오스크 프로토타입">
-      <header class="kiosk-header">
-        <div class="brand-block">
-          <p class="brand-kicker">MEGA KIOSK DEMO</p>
-          <h1>메가MGC커피</h1>
-          <p class="brand-copy">공식 메뉴 정보를 바탕으로 구성한 프런트엔드 키오스크 시안</p>
+    <main class="kiosk-screen" aria-label="메가MGC커피 키오스크">
+      <header class="screen-header">
+        <div class="utility-bar">
+          <button class="utility-button home-button" type="button">처음으로</button>
+          <h1>메가엠지씨커피</h1>
+          <button class="utility-button language-button" type="button">LANGUAGE</button>
         </div>
 
-        <div class="header-tools">
-          <div class="order-mode" role="group" aria-label="주문 방식">
-            <button class="mode-chip is-active" type="button">포장</button>
-            <button class="mode-chip" type="button">매장</button>
-          </div>
-
-          <div class="timer-box">
-            <span>남은 시간</span>
-            <strong id="timer-value">117초</strong>
-          </div>
-        </div>
+        <nav class="main-tab-bar" id="main-tab-bar" aria-label="메인 메뉴 탭"></nav>
+        <div class="sub-tab-bar" id="sub-tab-bar" aria-label="세부 메뉴 탭"></div>
       </header>
 
-      <section class="notice-strip">
-        <p>스크롤 없이 보이도록 9:16 키오스크 비율로 고정했습니다.</p>
-        <button class="notice-button" id="source-note-button" type="button">메뉴 기준 보기</button>
+      <section class="menu-section">
+        <div class="side-badge">비슷추천</div>
+        <div class="product-grid" id="product-grid" aria-live="polite"></div>
+        <div class="grid-indicator" aria-hidden="true"></div>
       </section>
 
-      <section class="kiosk-content">
-        <nav class="category-rail" id="category-rail" aria-label="카테고리"></nav>
-
-        <section class="product-panel">
-          <div class="panel-toolbar">
-            <div>
-              <p class="section-label">Menu</p>
-              <h2 id="current-category-title">추천 메뉴</h2>
-            </div>
-
-            <label class="search-box" for="search-input">
-              <span aria-hidden="true">⌕</span>
-              <input id="search-input" type="search" placeholder="메뉴 검색">
-            </label>
+      <section class="order-section">
+        <div class="order-table-panel">
+          <div class="order-table-head">
+            <span>메뉴</span>
+            <span>수량</span>
+            <span>가격</span>
           </div>
+          <div class="order-list" id="order-list"></div>
+        </div>
 
-          <div class="product-grid" id="product-grid" aria-live="polite"></div>
-        </section>
+        <aside class="payment-panel">
+          <button class="clear-circle-button" id="clear-cart-button" type="button">전체<br>삭제</button>
 
-        <aside class="order-panel">
-          <div class="order-head">
-            <div>
-              <p class="section-label">Order</p>
-              <h2>장바구니</h2>
+          <div class="payment-status">
+            <div class="status-line">
+              <span>남은시간</span>
+              <strong id="timer-value">117초</strong>
             </div>
-            <button class="text-button" id="clear-cart-button" type="button">전체 삭제</button>
-          </div>
-
-          <div class="order-list" id="cart-list"></div>
-
-          <div class="order-summary">
-            <div class="summary-row">
-              <span>수량</span>
+            <div class="status-line">
+              <span>선택한 상품</span>
               <strong id="item-count">0개</strong>
             </div>
-            <div class="summary-row total">
-              <span>총 결제금액</span>
-              <strong id="total-price">0원</strong>
-            </div>
-            <button class="checkout-button" id="checkout-button" type="button">결제하기</button>
           </div>
+
+          <button class="payment-button" id="checkout-button" type="button">
+            <span class="payment-label">총 결제금액</span>
+            <strong id="total-price">0원</strong>
+            <span class="payment-action">결제하기</span>
+          </button>
         </aside>
       </section>
     </main>
   </div>
 
-  <div class="modal hidden" id="option-modal" role="dialog" aria-modal="true" aria-labelledby="option-modal-title">
-    <div class="modal-card option-modal-card">
+  <div class="modal hidden" id="option-modal" role="dialog" aria-modal="true" aria-labelledby="option-title">
+    <div class="modal-card">
       <div class="modal-head">
         <div>
-          <p class="section-label">Option</p>
-          <h3 id="option-modal-title">메뉴 옵션 선택</h3>
+          <p class="modal-kicker">옵션 선택</p>
+          <h2 id="option-title">메뉴 옵션</h2>
         </div>
-        <button class="icon-button" id="close-option-button" type="button" aria-label="옵션 닫기">×</button>
+        <button class="modal-close" id="close-option-button" type="button" aria-label="닫기">×</button>
       </div>
 
-      <div class="option-layout">
-        <div class="option-preview">
-          <img id="option-image" alt="">
-          <div class="option-copy">
-            <strong id="option-name"></strong>
-            <p id="option-description"></p>
-            <dl class="meta-list">
-              <div>
-                <dt>컵 용량</dt>
-                <dd id="option-cup-size"></dd>
-              </div>
-              <div>
-                <dt>알레르기</dt>
-                <dd id="option-allergy"></dd>
-              </div>
-            </dl>
-          </div>
+      <div class="option-preview">
+        <div class="option-visual" id="option-visual"></div>
+        <div class="option-copy">
+          <strong id="option-name"></strong>
+          <p id="option-description"></p>
+          <p class="option-base-price" id="option-base-price"></p>
         </div>
-
-        <div class="option-groups" id="option-groups"></div>
       </div>
+
+      <div class="option-groups" id="option-groups"></div>
 
       <div class="modal-foot">
-        <div class="option-price-block">
+        <div class="option-total">
           <span>선택 금액</span>
           <strong id="option-total-price">0원</strong>
         </div>
-        <button class="primary-button" id="add-to-cart-button" type="button">장바구니 담기</button>
+        <button class="confirm-button" id="add-to-cart-button" type="button">담기</button>
       </div>
     </div>
   </div>
 
   <div class="modal hidden" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
-    <div class="modal-card checkout-modal-card">
+    <div class="modal-card checkout-card">
       <div class="modal-head">
         <div>
-          <p class="section-label">Checkout</p>
-          <h3 id="checkout-title">주문 요약</h3>
+          <p class="modal-kicker">주문 요약</p>
+          <h2 id="checkout-title">결제 전 확인</h2>
         </div>
-        <button class="icon-button" id="close-checkout-button" type="button" aria-label="결제 모달 닫기">×</button>
+        <button class="modal-close" id="close-checkout-button" type="button" aria-label="닫기">×</button>
       </div>
 
-      <div class="checkout-summary" id="checkout-summary"></div>
+      <div class="checkout-list" id="checkout-summary"></div>
 
       <div class="modal-foot">
-        <div class="option-price-block">
+        <div class="option-total">
           <span>총 결제금액</span>
           <strong id="checkout-total-price">0원</strong>
         </div>
-        <button class="primary-button" id="confirm-checkout-button" type="button">결제 흐름 확인</button>
+        <button class="confirm-button" id="confirm-checkout-button" type="button">결제 흐름 보기</button>
       </div>
     </div>
   </div>
 
-  <template id="category-button-template">
-    <button class="category-button" type="button"></button>
+  <template id="main-tab-template">
+    <button class="main-tab" type="button"></button>
+  </template>
+
+  <template id="sub-tab-template">
+    <button class="sub-tab" type="button"></button>
   </template>
 
   <template id="product-card-template">
     <button class="product-card" type="button">
-      <div class="product-image-wrap">
-        <img class="product-image" alt="">
-        <span class="product-tag"></span>
+      <div class="product-top">
+        <span class="badge"></span>
+        <span class="zoom-mark">⌕</span>
       </div>
-      <div class="product-copy">
+      <div class="product-visual"></div>
+      <div class="product-meta">
         <p class="product-name"></p>
-        <p class="product-meta"></p>
-        <div class="product-bottom">
-          <strong class="product-price"></strong>
-          <span class="product-action">옵션 선택</span>
-        </div>
+        <strong class="product-price"></strong>
       </div>
     </button>
   </template>
 
-  <template id="cart-item-template">
-    <article class="cart-item">
-      <div class="cart-copy">
-        <strong class="cart-name"></strong>
-        <p class="cart-options"></p>
+  <template id="order-row-template">
+    <div class="order-row">
+      <div class="order-menu">
+        <strong class="order-name"></strong>
+        <p class="order-option"></p>
       </div>
-      <div class="cart-controls">
+      <div class="order-qty-wrap">
         <button class="qty-button minus" type="button" aria-label="수량 줄이기">-</button>
-        <span class="cart-quantity"></span>
+        <span class="order-qty"></span>
         <button class="qty-button plus" type="button" aria-label="수량 늘리기">+</button>
       </div>
-      <strong class="cart-price"></strong>
-    </article>
+      <strong class="order-price"></strong>
+    </div>
   </template>
 
   <script src="app.js"></script>
