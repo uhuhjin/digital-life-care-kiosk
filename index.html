@@ -23,7 +23,11 @@
       <section class="menu-section">
         <div class="side-badge">비슷추천</div>
         <div class="product-grid" id="product-grid" aria-live="polite"></div>
-        <div class="grid-indicator" aria-hidden="true"></div>
+        <div class="grid-pagination" id="grid-pagination">
+          <button class="page-button" id="prev-page-button" type="button" aria-label="이전 페이지">&lt;</button>
+          <span class="page-indicator" id="page-indicator">1 / 1</span>
+          <button class="page-button" id="next-page-button" type="button" aria-label="다음 페이지">&gt;</button>
+        </div>
       </section>
 
       <section class="order-section">

@@ -519,6 +519,7 @@ const OPTION_SETS = {
 const state = {
   activeMainTab: "recommended",
   activeSubTab: "espresso",
+  currentPage: 0,
   activeItemId: null,
   optionSelections: {},
   cart: [],
@@ -526,9 +527,14 @@ const state = {
   timerId: null,
 };
 
+const PAGE_SIZE = 12;
+
 const mainTabBar = document.getElementById("main-tab-bar");
 const subTabBar = document.getElementById("sub-tab-bar");
 const productGrid = document.getElementById("product-grid");
+const pageIndicator = document.getElementById("page-indicator");
+const prevPageButton = document.getElementById("prev-page-button");
+const nextPageButton = document.getElementById("next-page-button");
 const orderList = document.getElementById("order-list");
 const timerValue = document.getElementById("timer-value");
 const itemCount = document.getElementById("item-count");
@@ -570,6 +576,20 @@ function getVisibleItems() {
       item.mainTabs.includes(state.activeMainTab) &&
       item.subTabs.includes(state.activeSubTab),
   );
+}
+
+function getPagedItems(items) {
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const currentPage = Math.min(state.currentPage, totalPages - 1);
+  const start = currentPage * PAGE_SIZE;
+
+  state.currentPage = currentPage;
+
+  return {
+    items: items.slice(start, start + PAGE_SIZE),
+    totalPages,
+    currentPage,
+  };
 }
 
 function getOptionGroups(item) {
@@ -664,6 +684,7 @@ function renderMainTabs() {
     button.addEventListener("click", () => {
       state.activeMainTab = tab.id;
       state.activeSubTab = tab.subTabs[0].id;
+      state.currentPage = 0;
       renderMainTabs();
       renderSubTabs();
       renderProducts();
@@ -689,6 +710,7 @@ function renderSubTabs() {
     button.classList.toggle("is-active", subTab.id === state.activeSubTab);
     button.addEventListener("click", () => {
       state.activeSubTab = subTab.id;
+      state.currentPage = 0;
       renderSubTabs();
       renderProducts();
     });
@@ -699,9 +721,10 @@ function renderSubTabs() {
 
 function renderProducts() {
   const items = getVisibleItems();
+  const paged = getPagedItems(items);
   productGrid.innerHTML = "";
 
-  items.forEach((item) => {
+  paged.items.forEach((item) => {
     const fragment = productCardTemplate.content.cloneNode(true);
     const card = fragment.querySelector(".product-card");
     const visual = fragment.querySelector(".product-visual");
@@ -716,6 +739,10 @@ function renderProducts() {
     card.addEventListener("click", () => openOptionModal(item.id));
     productGrid.appendChild(fragment);
   });
+
+  pageIndicator.textContent = `${paged.currentPage + 1} / ${paged.totalPages}`;
+  prevPageButton.disabled = paged.currentPage === 0;
+  nextPageButton.disabled = paged.currentPage >= paged.totalPages - 1;
 }
 
 function renderCart() {
@@ -933,6 +960,17 @@ function initializeEvents() {
   });
 
   checkoutButton.addEventListener("click", openCheckoutModal);
+  prevPageButton.addEventListener("click", () => {
+    if (state.currentPage === 0) {
+      return;
+    }
+    state.currentPage -= 1;
+    renderProducts();
+  });
+  nextPageButton.addEventListener("click", () => {
+    state.currentPage += 1;
+    renderProducts();
+  });
   closeOptionButton.addEventListener("click", closeOptionModal);
   addToCartButton.addEventListener("click", addActiveItemToCart);
   closeCheckoutButton.addEventListener("click", closeCheckoutModal);
