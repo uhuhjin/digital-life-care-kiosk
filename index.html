@@ -3,104 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>메가 키오스크 프로토타입</title>
+  <title>메가MGC커피 키오스크 프로토타입</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="page-shell">
-    <aside class="guide-panel">
-      <p class="guide-label">Prototype</p>
-      <h1>메가커피 스타일 키오스크</h1>
-      <p class="guide-text">
-        첨부한 화면을 기준으로 구성한 프런트엔드 전용 프로토타입입니다.
-        카테고리 선택, 상품 담기, 수량 변경, 남은 시간, 결제 요약까지 기본 흐름을 확인할 수 있습니다.
-      </p>
-      <div class="guide-links">
-        <a class="guide-link primary" href="./index.html">현재 화면 새로 열기</a>
-        <a class="guide-link" href="./README.md">설계 및 실행 가이드 보기</a>
-      </div>
-      <dl class="guide-summary">
-        <div>
-          <dt>구현 범위</dt>
-          <dd>정적 HTML/CSS/JS</dd>
+  <div class="app-shell">
+    <main class="kiosk-frame" aria-label="메가MGC커피 키오스크 프로토타입">
+      <header class="kiosk-header">
+        <div class="brand-block">
+          <p class="brand-kicker">MEGA KIOSK DEMO</p>
+          <h1>메가MGC커피</h1>
+          <p class="brand-copy">공식 메뉴 정보를 바탕으로 구성한 프런트엔드 키오스크 시안</p>
         </div>
-        <div>
-          <dt>핵심 기능</dt>
-          <dd>메뉴 선택, 장바구니, 합계, 결제 모달</dd>
-        </div>
-        <div>
-          <dt>다음 단계</dt>
-          <dd>백엔드 연동, 결제, 관리자 메뉴</dd>
-        </div>
-      </dl>
-    </aside>
 
-    <main class="kiosk-shell">
-      <header class="top-header">
-        <div>
-          <p class="brand-sub">메가커피 키오스크</p>
-          <h2>MEGA MGC COFFEE</h2>
-        </div>
-        <div class="header-actions">
-          <button class="chip chip-active" type="button">포장</button>
-          <button class="chip" type="button">매장</button>
-          <button class="language-button" type="button">LANGUAGE</button>
+        <div class="header-tools">
+          <div class="order-mode" role="group" aria-label="주문 방식">
+            <button class="mode-chip is-active" type="button">포장</button>
+            <button class="mode-chip" type="button">매장</button>
+          </div>
+
+          <div class="timer-box">
+            <span>남은 시간</span>
+            <strong id="timer-value">117초</strong>
+          </div>
         </div>
       </header>
 
-      <section class="service-strip">
-        <button class="service-tab active" type="button" data-service="전체">추천상품</button>
-        <button class="service-tab" type="button" data-service="커피">커피</button>
-        <button class="service-tab" type="button" data-service="디카페인">디카페인</button>
-        <button class="service-tab" type="button" data-service="음료">음료</button>
-        <button class="service-tab" type="button" data-service="티">티</button>
-        <button class="service-tab" type="button" data-service="푸드">푸드</button>
+      <section class="notice-strip">
+        <p>스크롤 없이 보이도록 9:16 키오스크 비율로 고정했습니다.</p>
+        <button class="notice-button" id="source-note-button" type="button">메뉴 기준 보기</button>
       </section>
 
-      <section class="search-strip">
-        <div class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input id="search-input" type="search" placeholder="메뉴명을 입력해 주세요">
-        </div>
-        <p class="search-help">카드를 누르면 장바구니에 담깁니다.</p>
-      </section>
+      <section class="kiosk-content">
+        <nav class="category-rail" id="category-rail" aria-label="카테고리"></nav>
 
-      <section class="category-strip" id="category-strip" aria-label="상품 카테고리"></section>
-
-      <section class="content-area">
-        <div class="product-grid" id="product-grid" aria-live="polite"></div>
-
-        <aside class="cart-panel">
-          <div class="cart-top">
+        <section class="product-panel">
+          <div class="panel-toolbar">
             <div>
-              <p class="cart-label">주문 현황</p>
-              <h3>선택한 메뉴</h3>
+              <p class="section-label">Menu</p>
+              <h2 id="current-category-title">추천 메뉴</h2>
             </div>
-            <button class="clear-button" id="clear-cart-button" type="button">전체 삭제</button>
+
+            <label class="search-box" for="search-input">
+              <span aria-hidden="true">⌕</span>
+              <input id="search-input" type="search" placeholder="메뉴 검색">
+            </label>
           </div>
 
-          <div class="cart-table-head">
-            <span>메뉴</span>
-            <span>수량</span>
-            <span>금액</span>
+          <div class="product-grid" id="product-grid" aria-live="polite"></div>
+        </section>
+
+        <aside class="order-panel">
+          <div class="order-head">
+            <div>
+              <p class="section-label">Order</p>
+              <h2>장바구니</h2>
+            </div>
+            <button class="text-button" id="clear-cart-button" type="button">전체 삭제</button>
           </div>
 
-          <div class="cart-list" id="cart-list"></div>
+          <div class="order-list" id="cart-list"></div>
 
-          <div class="cart-footer">
-            <div class="timer-card">
-              <span>남은시간</span>
-              <strong id="timer-value">117초</strong>
+          <div class="order-summary">
+            <div class="summary-row">
+              <span>수량</span>
+              <strong id="item-count">0개</strong>
             </div>
-            <div class="summary-card">
-              <div>
-                <span>선택 상품</span>
-                <strong id="item-count">0개</strong>
-              </div>
-              <div>
-                <span>총 결제금액</span>
-                <strong id="total-price">0원</strong>
-              </div>
+            <div class="summary-row total">
+              <span>총 결제금액</span>
+              <strong id="total-price">0원</strong>
             </div>
             <button class="checkout-button" id="checkout-button" type="button">결제하기</button>
           </div>
@@ -109,52 +80,104 @@
     </main>
   </div>
 
-  <div class="modal hidden" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-panel">
-      <h3 id="modal-title">주문 요약</h3>
-      <p class="modal-text">
-        현재는 프런트엔드 프로토타입이라 실제 결제는 연결되어 있지 않습니다.
-        아래 데이터를 기준으로 다음 단계에서 주문 API와 결제 모듈을 붙이면 됩니다.
-      </p>
-      <div class="modal-summary" id="modal-summary"></div>
-      <div class="modal-actions">
-        <button class="secondary-button" id="close-modal-button" type="button">닫기</button>
-        <button class="primary-button" id="fake-pay-button" type="button">결제 흐름 확인</button>
+  <div class="modal hidden" id="option-modal" role="dialog" aria-modal="true" aria-labelledby="option-modal-title">
+    <div class="modal-card option-modal-card">
+      <div class="modal-head">
+        <div>
+          <p class="section-label">Option</p>
+          <h3 id="option-modal-title">메뉴 옵션 선택</h3>
+        </div>
+        <button class="icon-button" id="close-option-button" type="button" aria-label="옵션 닫기">×</button>
+      </div>
+
+      <div class="option-layout">
+        <div class="option-preview">
+          <img id="option-image" alt="">
+          <div class="option-copy">
+            <strong id="option-name"></strong>
+            <p id="option-description"></p>
+            <dl class="meta-list">
+              <div>
+                <dt>컵 용량</dt>
+                <dd id="option-cup-size"></dd>
+              </div>
+              <div>
+                <dt>알레르기</dt>
+                <dd id="option-allergy"></dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="option-groups" id="option-groups"></div>
+      </div>
+
+      <div class="modal-foot">
+        <div class="option-price-block">
+          <span>선택 금액</span>
+          <strong id="option-total-price">0원</strong>
+        </div>
+        <button class="primary-button" id="add-to-cart-button" type="button">장바구니 담기</button>
       </div>
     </div>
   </div>
 
+  <div class="modal hidden" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+    <div class="modal-card checkout-modal-card">
+      <div class="modal-head">
+        <div>
+          <p class="section-label">Checkout</p>
+          <h3 id="checkout-title">주문 요약</h3>
+        </div>
+        <button class="icon-button" id="close-checkout-button" type="button" aria-label="결제 모달 닫기">×</button>
+      </div>
+
+      <div class="checkout-summary" id="checkout-summary"></div>
+
+      <div class="modal-foot">
+        <div class="option-price-block">
+          <span>총 결제금액</span>
+          <strong id="checkout-total-price">0원</strong>
+        </div>
+        <button class="primary-button" id="confirm-checkout-button" type="button">결제 흐름 확인</button>
+      </div>
+    </div>
+  </div>
+
+  <template id="category-button-template">
+    <button class="category-button" type="button"></button>
+  </template>
+
   <template id="product-card-template">
     <button class="product-card" type="button">
-      <span class="badge"></span>
-      <div class="product-thumb">
-        <div class="cup-illustration">
-          <span class="cup-cap"></span>
-          <span class="cup-body"></span>
+      <div class="product-image-wrap">
+        <img class="product-image" alt="">
+        <span class="product-tag"></span>
+      </div>
+      <div class="product-copy">
+        <p class="product-name"></p>
+        <p class="product-meta"></p>
+        <div class="product-bottom">
+          <strong class="product-price"></strong>
+          <span class="product-action">옵션 선택</span>
         </div>
       </div>
-      <div class="product-info">
-        <p class="product-category"></p>
-        <strong class="product-name"></strong>
-        <span class="product-price"></span>
-      </div>
-      <span class="add-text">담기</span>
     </button>
   </template>
 
   <template id="cart-item-template">
-    <div class="cart-row">
-      <div class="cart-menu">
-        <strong class="cart-item-name"></strong>
-        <span class="cart-item-note">기본 옵션</span>
+    <article class="cart-item">
+      <div class="cart-copy">
+        <strong class="cart-name"></strong>
+        <p class="cart-options"></p>
       </div>
-      <div class="cart-quantity-controls">
+      <div class="cart-controls">
         <button class="qty-button minus" type="button" aria-label="수량 줄이기">-</button>
-        <span class="cart-item-quantity"></span>
+        <span class="cart-quantity"></span>
         <button class="qty-button plus" type="button" aria-label="수량 늘리기">+</button>
       </div>
-      <strong class="cart-item-price"></strong>
-    </div>
+      <strong class="cart-price"></strong>
+    </article>
   </template>
 
   <script src="app.js"></script>
