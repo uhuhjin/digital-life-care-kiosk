@@ -705,6 +705,18 @@ button {
   font-weight: 800;
 }
 
+.checkout-message {
+  margin: 14px 0;
+  padding: 18px 16px;
+  border-radius: 14px;
+  border: 1px solid #ddd3c0;
+  background: #fcfaf4;
+  color: #5b5247;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  text-align: center;
+}
+
 .checkout-list {
   display: grid;
   gap: 10px;

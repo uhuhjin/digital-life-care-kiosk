@@ -907,23 +907,25 @@ function openCheckoutModal() {
     return;
   }
 
-  checkoutSummary.innerHTML = "";
-  state.cart.forEach((item) => {
-    const row = document.createElement("div");
-    row.className = "checkout-row";
-    row.innerHTML = `
-      <strong>${item.name} x ${item.quantity}</strong>
-      <p>${item.optionText}<br>${formatPrice(item.unitPrice * item.quantity)}</p>
-    `;
-    checkoutSummary.appendChild(row);
-  });
-
+  checkoutSummary.textContent = "확인을 누르면 담긴 메뉴와 주문 시간이 초기화됩니다.";
   checkoutTotalPrice.textContent = formatPrice(getCartTotals().total);
   checkoutModal.classList.remove("hidden");
 }
 
 function closeCheckoutModal() {
   checkoutModal.classList.add("hidden");
+}
+
+function clearOrderState() {
+  state.cart = [];
+  state.activeItemId = null;
+  state.optionSelections = {};
+  checkoutSummary.textContent = "";
+  checkoutTotalPrice.textContent = formatPrice(0);
+  closeOptionModal();
+  closeCheckoutModal();
+  resetTimer();
+  renderCart();
 }
 
 function resetTimer() {
@@ -941,9 +943,7 @@ function startTimer() {
     timerValue.textContent = `${state.remainingSeconds}초`;
 
     if (state.remainingSeconds <= 0) {
-      state.cart = [];
-      renderCart();
-      resetTimer();
+      clearOrderState();
       window.alert("주문 시간이 만료되어 장바구니를 비웠습니다.");
     }
   }, 1000);
@@ -951,9 +951,7 @@ function startTimer() {
 
 function initializeEvents() {
   clearCartButton.addEventListener("click", () => {
-    state.cart = [];
-    resetTimer();
-    renderCart();
+    clearOrderState();
   });
 
   checkoutButton.addEventListener("click", openCheckoutModal);
@@ -970,11 +968,10 @@ function initializeEvents() {
   });
   closeOptionButton.addEventListener("click", closeOptionModal);
   addToCartButton.addEventListener("click", addActiveItemToCart);
-  closeCheckoutButton.addEventListener("click", closeCheckoutModal);
+  closeCheckoutButton.addEventListener("click", clearOrderState);
 
   confirmCheckoutButton.addEventListener("click", () => {
-    closeCheckoutModal();
-    window.alert("현재는 프런트엔드 시안입니다. 다음 단계에서 실제 결제 API를 붙이면 됩니다.");
+    clearOrderState();
   });
 
   optionModal.addEventListener("click", (event) => {
@@ -983,11 +980,6 @@ function initializeEvents() {
     }
   });
 
-  checkoutModal.addEventListener("click", (event) => {
-    if (event.target === checkoutModal) {
-      closeCheckoutModal();
-    }
-  });
 }
 
 function initialize() {
