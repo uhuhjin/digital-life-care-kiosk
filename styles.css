@@ -50,6 +50,12 @@ button {
   --order-qty-width: 64px;
   --order-price-width: 64px;
   --order-gap: 8px;
+  --product-visual-scale: 1;
+  --product-name-font-size: 0.6rem;
+  --product-name-reserved-height: 1.34rem;
+  --product-name-line-clamp: 2;
+  --product-meta-gap: 2px;
+  --product-price-font-size: 0.82rem;
   width: min(calc((100dvh - 20px) * 0.56), calc(100vw - 20px), 480px);
   height: min(calc(100dvh - 20px), 854px);
   aspect-ratio: 9 / 16;
@@ -193,9 +199,9 @@ button {
 .product-card {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
-  align-content: start;
-  gap: 4px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  gap: 2px;
   min-height: 0;
   padding: 4px;
   border-radius: 6px;
@@ -209,7 +215,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  min-height: 12px;
+  min-height: 10px;
 }
 
 .zoom-mark {
@@ -221,17 +227,20 @@ button {
 .product-visual,
 .option-visual {
   position: relative;
-  align-self: center;
   justify-self: center;
 }
 
 .product-visual {
-  width: 58px;
-  height: 48px;
-  margin: 4px auto 6px;
+  --drink-scale: var(--product-visual-scale);
+  align-self: end;
+  width: calc(58px * var(--drink-scale));
+  height: calc(48px * var(--drink-scale));
+  margin: 0 auto 1px;
 }
 
 .option-visual {
+  --drink-scale: 1;
+  align-self: center;
   width: 96px;
   height: 96px;
   border-radius: 14px;
@@ -248,23 +257,23 @@ button {
 
 .product-visual::before,
 .option-visual::before {
-  left: 10px;
+  left: calc(10px * var(--drink-scale));
   bottom: 0;
-  width: 46px;
-  height: 12px;
+  width: calc(46px * var(--drink-scale));
+  height: calc(12px * var(--drink-scale));
   border-radius: 50%;
   background: #e7cc2f;
 }
 
 .product-visual::after,
 .option-visual::after {
-  left: 16px;
-  bottom: 8px;
-  width: 34px;
-  height: 40px;
+  left: calc(16px * var(--drink-scale));
+  bottom: calc(8px * var(--drink-scale));
+  width: calc(34px * var(--drink-scale));
+  height: calc(40px * var(--drink-scale));
   border-radius: 6px 6px 10px 10px;
   clip-path: polygon(12% 0, 88% 0, 75% 100%, 25% 100%);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 calc(2px * var(--drink-scale)) rgba(255, 255, 255, 0.12);
 }
 
 .drink-iced-dark::after {
@@ -287,22 +296,22 @@ button {
 .drink-iced-latte .ice-bubbles::after {
   content: "";
   position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
+  width: calc(6px * var(--drink-scale, 1));
+  height: calc(6px * var(--drink-scale, 1));
+  border-radius: calc(2px * var(--drink-scale, 1));
   background: rgba(255, 255, 255, 0.34);
 }
 
 .drink-iced-dark .ice-bubbles::before,
 .drink-iced-latte .ice-bubbles::before {
-  top: 18px;
-  left: 24px;
+  top: calc(18px * var(--drink-scale, 1));
+  left: calc(24px * var(--drink-scale, 1));
 }
 
 .drink-iced-dark .ice-bubbles::after,
 .drink-iced-latte .ice-bubbles::after {
-  top: 28px;
-  left: 36px;
+  top: calc(28px * var(--drink-scale, 1));
+  left: calc(36px * var(--drink-scale, 1));
 }
 
 .drink-iced-latte::after {
@@ -310,41 +319,41 @@ button {
 }
 
 .drink-hot-cup::after {
-  left: 20px;
-  bottom: 8px;
-  width: 28px;
-  height: 38px;
+  left: calc(20px * var(--drink-scale, 1));
+  bottom: calc(8px * var(--drink-scale, 1));
+  width: calc(28px * var(--drink-scale, 1));
+  height: calc(38px * var(--drink-scale, 1));
   border-radius: 4px 4px 8px 8px;
   clip-path: polygon(10% 0, 90% 0, 80% 100%, 20% 100%);
   background: #fffef4;
-  box-shadow: inset 0 0 0 1px #d6d0c1;
+  box-shadow: inset 0 0 0 calc(1px * var(--drink-scale, 1)) #d6d0c1;
 }
 
 .drink-hot-cup::before {
-  left: 10px;
+  left: calc(10px * var(--drink-scale, 1));
   bottom: 0;
-  width: 46px;
-  height: 11px;
+  width: calc(46px * var(--drink-scale, 1));
+  height: calc(11px * var(--drink-scale, 1));
   border-radius: 50%;
   background: #dcc92f;
 }
 
 .drink-espresso::after {
-  left: 18px;
-  bottom: 14px;
-  width: 30px;
-  height: 15px;
+  left: calc(18px * var(--drink-scale, 1));
+  bottom: calc(14px * var(--drink-scale, 1));
+  width: calc(30px * var(--drink-scale, 1));
+  height: calc(15px * var(--drink-scale, 1));
   border-radius: 0 0 12px 12px;
   background: linear-gradient(180deg, #ffffff 0%, #f2f0e5 100%);
-  border: 1px solid #dbd6cb;
+  border: calc(1px * var(--drink-scale, 1)) solid #dbd6cb;
   clip-path: none;
 }
 
 .drink-espresso::before {
-  left: 12px;
-  bottom: 2px;
-  width: 40px;
-  height: 10px;
+  left: calc(12px * var(--drink-scale, 1));
+  bottom: calc(2px * var(--drink-scale, 1));
+  width: calc(40px * var(--drink-scale, 1));
+  height: calc(10px * var(--drink-scale, 1));
   border-radius: 50%;
   background: #dcc92f;
 }
@@ -355,82 +364,87 @@ button {
 }
 
 .drink-espresso .crema {
-  left: 21px;
-  bottom: 23px;
-  width: 24px;
-  height: 8px;
+  left: calc(21px * var(--drink-scale, 1));
+  bottom: calc(23px * var(--drink-scale, 1));
+  width: calc(24px * var(--drink-scale, 1));
+  height: calc(8px * var(--drink-scale, 1));
   border-radius: 50% 50% 35% 35%;
   background: #9a6234;
 }
 
 .drink-dessert::after {
-  left: 20px;
-  bottom: 8px;
-  width: 28px;
-  height: 34px;
+  left: calc(20px * var(--drink-scale, 1));
+  bottom: calc(8px * var(--drink-scale, 1));
+  width: calc(28px * var(--drink-scale, 1));
+  height: calc(34px * var(--drink-scale, 1));
   border-radius: 4px 4px 10px 10px;
   clip-path: polygon(10% 0, 90% 0, 80% 100%, 20% 100%);
   background: linear-gradient(180deg, #ddd6ca 0%, #a08b6a 100%);
 }
 
 .drink-dessert::before {
-  left: 10px;
+  left: calc(10px * var(--drink-scale, 1));
   bottom: 0;
-  width: 46px;
-  height: 11px;
+  width: calc(46px * var(--drink-scale, 1));
+  height: calc(11px * var(--drink-scale, 1));
   border-radius: 50%;
   background: #dcc92f;
 }
 
 .drink-dessert .topping {
-  left: 18px;
-  bottom: 30px;
-  width: 32px;
-  height: 18px;
+  left: calc(18px * var(--drink-scale, 1));
+  bottom: calc(30px * var(--drink-scale, 1));
+  width: calc(32px * var(--drink-scale, 1));
+  height: calc(18px * var(--drink-scale, 1));
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #f2ede2 0%, #c7beb0 55%, #7e6a4d 100%);
 }
 
 .drink-iced-latte .ice-label {
   position: absolute;
-  right: 4px;
-  top: 14px;
-  width: 18px;
-  height: 18px;
+  right: calc(4px * var(--drink-scale, 1));
+  top: calc(14px * var(--drink-scale, 1));
+  width: calc(18px * var(--drink-scale, 1));
+  height: calc(18px * var(--drink-scale, 1));
   border-radius: 50%;
   background: rgba(88, 146, 255, 0.85);
   color: #fff;
-  font-size: 0.48rem;
+  font-size: calc(0.48rem * var(--drink-scale, 1));
   font-weight: 800;
-  line-height: 18px;
+  line-height: calc(18px * var(--drink-scale, 1));
 }
 
 .product-meta {
   display: grid;
-  gap: 4px;
-  align-content: start;
+  grid-template-rows: minmax(var(--product-name-reserved-height), auto) auto;
+  gap: var(--product-meta-gap);
+  align-content: end;
+  align-self: end;
   min-height: 0;
+  width: 100%;
 }
 
 .product-name {
   display: -webkit-box;
-  min-height: 0;
+  min-height: var(--product-name-reserved-height);
   margin: 0;
-  padding: 0 2px;
+  padding: 0 1px;
   color: #666258;
-  font-size: 0.6rem;
-  line-height: 1.1;
-  word-break: keep-all;
+  font-size: var(--product-name-font-size);
+  line-height: 1.12;
+  word-break: normal;
+  overflow-wrap: anywhere;
   overflow: hidden;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--product-name-line-clamp);
   -webkit-box-orient: vertical;
 }
 
 .product-price {
   display: block;
   color: #b98a42;
-  font-size: 0.82rem;
+  font-size: var(--product-price-font-size);
   line-height: 1;
+  white-space: nowrap;
 }
 
 .grid-pagination {
@@ -794,6 +808,11 @@ button {
     --order-qty-width: 56px;
     --order-price-width: 60px;
     --order-gap: 6px;
+    --product-visual-scale: 0.9;
+    --product-name-font-size: 0.58rem;
+    --product-name-reserved-height: 1.3rem;
+    --product-meta-gap: 1px;
+    --product-price-font-size: 0.76rem;
   }
 
   .utility-bar {
@@ -825,18 +844,6 @@ button {
 
   .product-grid {
     gap: 6px;
-  }
-
-  .product-visual {
-    margin-top: 2px;
-  }
-
-  .product-name {
-    font-size: 0.58rem;
-  }
-
-  .product-price {
-    font-size: 0.76rem;
   }
 
   .order-table-head {
@@ -887,6 +894,10 @@ button {
     --product-columns: 2;
     --order-qty-width: 52px;
     --order-price-width: 56px;
+    --product-visual-scale: 0.88;
+    --product-name-font-size: 0.56rem;
+    --product-name-reserved-height: 1.24rem;
+    --product-price-font-size: 0.74rem;
   }
 
   .order-section {
@@ -929,6 +940,12 @@ button {
     --order-qty-width: 48px;
     --order-price-width: 52px;
     --order-gap: 4px;
+    --product-visual-scale: 0.8;
+    --product-name-font-size: 0.54rem;
+    --product-name-reserved-height: 0.64rem;
+    --product-name-line-clamp: 1;
+    --product-meta-gap: 1px;
+    --product-price-font-size: 0.72rem;
   }
 
   .screen-header {
@@ -944,10 +961,6 @@ button {
   .product-card {
     gap: 2px;
     padding-inline: 2px;
-  }
-
-  .product-name {
-    font-size: 0.54rem;
   }
 
   .payment-panel {
@@ -1078,18 +1091,13 @@ button {
   padding-bottom: 2px;
 }
 
-.kiosk-screen[data-height-tier="compact"] .product-visual {
-  margin: 0 auto 2px;
-  transform: scale(0.9);
-  transform-origin: center bottom;
-}
-
-.kiosk-screen[data-height-tier="compact"] .product-name {
-  font-size: 0.56rem;
-}
-
-.kiosk-screen[data-height-tier="compact"] .product-price {
-  font-size: 0.76rem;
+.kiosk-screen[data-height-tier="compact"] {
+  --product-visual-scale: 0.84;
+  --product-name-font-size: 0.56rem;
+  --product-name-reserved-height: 1.18rem;
+  --product-name-line-clamp: 2;
+  --product-meta-gap: 1px;
+  --product-price-font-size: 0.76rem;
 }
 
 .kiosk-screen[data-height-tier="compact"] .grid-pagination {
@@ -1165,19 +1173,13 @@ button {
   padding: 2px;
 }
 
-.kiosk-screen[data-height-tier="tight"] .product-visual {
-  margin: 0 auto;
-  transform: scale(0.82);
-  transform-origin: center bottom;
-}
-
-.kiosk-screen[data-height-tier="tight"] .product-name {
-  font-size: 0.54rem;
-  -webkit-line-clamp: 1;
-}
-
-.kiosk-screen[data-height-tier="tight"] .product-price {
-  font-size: 0.72rem;
+.kiosk-screen[data-height-tier="tight"] {
+  --product-visual-scale: 0.72;
+  --product-name-font-size: 0.54rem;
+  --product-name-reserved-height: 0.62rem;
+  --product-name-line-clamp: 1;
+  --product-meta-gap: 1px;
+  --product-price-font-size: 0.72rem;
 }
 
 .kiosk-screen[data-height-tier="tight"] .grid-pagination {
