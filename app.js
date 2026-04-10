@@ -527,8 +527,7 @@ const state = {
   timerId: null,
 };
 
-const PAGE_SIZE = 12;
-
+const kioskScreen = document.querySelector(".kiosk-screen");
 const mainTabBar = document.getElementById("main-tab-bar");
 const subTabBar = document.getElementById("sub-tab-bar");
 const productGrid = document.getElementById("product-grid");
@@ -560,6 +559,9 @@ const subTabTemplate = document.getElementById("sub-tab-template");
 const productCardTemplate = document.getElementById("product-card-template");
 const orderRowTemplate = document.getElementById("order-row-template");
 
+let responsiveRenderFrame = 0;
+let responsiveLayoutKey = "";
+
 const formatPrice = (value) => `${value.toLocaleString("ko-KR")}원`;
 
 function getActiveMainTab() {
@@ -578,15 +580,135 @@ function getVisibleItems() {
   );
 }
 
+function getResponsiveLayoutState() {
+  if (!kioskScreen) {
+    return {
+      widthTier: "base",
+      heightTier: "base",
+      orderLayout: "split",
+      columns: 4,
+      rows: 3,
+      orderSideWidth: 118,
+      orderQtyWidth: 64,
+      orderPriceWidth: 64,
+      orderGap: 8,
+    };
+  }
+
+  const { width, height } = kioskScreen.getBoundingClientRect();
+  const widthTier =
+    width <= 300 ? "tight" : width <= 360 ? "narrow" : width <= 420 ? "compact" : "base";
+  const heightTier = height <= 560 ? "tight" : height <= 700 ? "compact" : "base";
+
+  let columns = 4;
+  if (widthTier === "compact") {
+    columns = 3;
+  } else if (widthTier === "narrow" || widthTier === "tight") {
+    columns = 2;
+  }
+
+  let rows = 3;
+  if (heightTier === "compact") {
+    rows = 2;
+  } else if (heightTier === "tight") {
+    rows = 1;
+  }
+
+  let orderSideWidth = 118;
+  let orderQtyWidth = 64;
+  let orderPriceWidth = 64;
+  let orderGap = 8;
+
+  if (widthTier === "compact") {
+    orderSideWidth = 104;
+    orderQtyWidth = 56;
+    orderPriceWidth = 60;
+    orderGap = 6;
+  } else if (widthTier === "narrow") {
+    orderSideWidth = 96;
+    orderQtyWidth = 52;
+    orderPriceWidth = 56;
+    orderGap = 6;
+  } else if (widthTier === "tight") {
+    orderSideWidth = 88;
+    orderQtyWidth = 48;
+    orderPriceWidth = 52;
+    orderGap = 4;
+  }
+
+  const orderLayout =
+    widthTier === "narrow" || widthTier === "tight"
+      ? heightTier === "base"
+        ? "stacked"
+        : "split"
+      : "split";
+
+  return {
+    widthTier,
+    heightTier,
+    orderLayout,
+    columns,
+    rows,
+    orderSideWidth,
+    orderQtyWidth,
+    orderPriceWidth,
+    orderGap,
+  };
+}
+
+function applyResponsiveLayout() {
+  if (!kioskScreen) {
+    return false;
+  }
+
+  const layout = getResponsiveLayoutState();
+  const nextKey = JSON.stringify(layout);
+
+  if (nextKey === responsiveLayoutKey) {
+    return false;
+  }
+
+  responsiveLayoutKey = nextKey;
+  kioskScreen.dataset.widthTier = layout.widthTier;
+  kioskScreen.dataset.heightTier = layout.heightTier;
+  kioskScreen.dataset.orderLayout = layout.orderLayout;
+  kioskScreen.style.setProperty("--product-columns", layout.columns);
+  kioskScreen.style.setProperty("--product-rows", layout.rows);
+  kioskScreen.style.setProperty("--order-side-width", `${layout.orderSideWidth}px`);
+  kioskScreen.style.setProperty("--order-qty-width", `${layout.orderQtyWidth}px`);
+  kioskScreen.style.setProperty("--order-price-width", `${layout.orderPriceWidth}px`);
+  kioskScreen.style.setProperty("--order-gap", `${layout.orderGap}px`);
+
+  return true;
+}
+
+function getLayoutMetrics() {
+  if (!kioskScreen) {
+    return { columns: 4, rows: 3 };
+  }
+
+  const styles = window.getComputedStyle(kioskScreen);
+  const columns = Number.parseInt(styles.getPropertyValue("--product-columns"), 10) || 4;
+  const rows = Number.parseInt(styles.getPropertyValue("--product-rows"), 10) || 3;
+
+  return { columns, rows };
+}
+
+function getPageSize() {
+  const { columns, rows } = getLayoutMetrics();
+  return Math.max(1, columns * rows);
+}
+
 function getPagedItems(items) {
-  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const pageSize = getPageSize();
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
   const currentPage = Math.min(state.currentPage, totalPages - 1);
-  const start = currentPage * PAGE_SIZE;
+  const start = currentPage * pageSize;
 
   state.currentPage = currentPage;
 
   return {
-    items: items.slice(start, start + PAGE_SIZE),
+    items: items.slice(start, start + pageSize),
     totalPages,
     currentPage,
   };
@@ -740,6 +862,34 @@ function renderProducts() {
   pageIndicator.textContent = `${paged.currentPage + 1} / ${paged.totalPages}`;
   prevPageButton.disabled = paged.currentPage === 0;
   nextPageButton.disabled = paged.currentPage >= paged.totalPages - 1;
+}
+
+function queueResponsiveRender() {
+  if (responsiveRenderFrame) {
+    window.cancelAnimationFrame(responsiveRenderFrame);
+  }
+
+  responsiveRenderFrame = window.requestAnimationFrame(() => {
+    responsiveRenderFrame = 0;
+    applyResponsiveLayout();
+    renderProducts();
+  });
+}
+
+function initializeResponsiveLayout() {
+  if (!kioskScreen) {
+    return;
+  }
+
+  if ("ResizeObserver" in window) {
+    const resizeObserver = new ResizeObserver(() => {
+      queueResponsiveRender();
+    });
+    resizeObserver.observe(kioskScreen);
+    return;
+  }
+
+  window.addEventListener("resize", queueResponsiveRender);
 }
 
 function renderCart() {
@@ -983,6 +1133,7 @@ function initializeEvents() {
 }
 
 function initialize() {
+  applyResponsiveLayout();
   renderMainTabs();
   renderSubTabs();
   renderProducts();
@@ -990,6 +1141,7 @@ function initialize() {
   resetTimer();
   startTimer();
   initializeEvents();
+  initializeResponsiveLayout();
 }
 
 initialize();
