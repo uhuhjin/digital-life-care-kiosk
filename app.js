@@ -762,11 +762,20 @@ function buildOptionSummary(item, selections) {
     .join(" · ");
 }
 
-function applyDrinkVisual(node, visualType) {
+function applyDrinkVisual(node, item) {
+  const visualType = item.visualType;
   const baseClass = node.classList.contains("option-visual") ? "option-visual" : "product-visual";
 
   node.className = `${baseClass} ${visualType}`;
   node.innerHTML = "";
+
+  const img = document.createElement("img");
+  img.src = `public/images/${item.name}.jpg`;
+  img.alt = item.name;
+  img.style.width = "100%";
+  img.style.height = "100%";
+  img.style.objectFit = "cover"; // 메뉴 이미지가 꽉 차게 보이도록 설정
+  node.appendChild(img);
 
   if (visualType === "drink-iced-dark" || visualType === "drink-iced-latte") {
     const bubbles = document.createElement("span");
@@ -851,7 +860,7 @@ function renderProducts() {
     const card = fragment.querySelector(".product-card");
     const visual = fragment.querySelector(".product-visual");
 
-    applyDrinkVisual(visual, item.visualType);
+    applyDrinkVisual(visual, item);
     fragment.querySelector(".product-name").textContent = item.name;
     fragment.querySelector(".product-price").textContent = formatPrice(item.price);
 
@@ -989,7 +998,7 @@ function renderOptionModal() {
   optionBasePrice.textContent = `기본 금액 ${formatPrice(item.price)}`;
   optionGroups.innerHTML = "";
   optionTotalPrice.textContent = formatPrice(getSelectionPrice(item, selections));
-  applyDrinkVisual(optionVisual, item.visualType);
+  applyDrinkVisual(optionVisual, item);
 
   getOptionGroups(item).forEach((group) => {
     const wrapper = document.createElement("section");
@@ -1100,6 +1109,26 @@ function startTimer() {
 }
 
 function initializeEvents() {
+  const resetToHome = () => {
+    clearOrderState();
+    state.activeMainTab = "recommended";
+    state.activeSubTab = "espresso";
+    state.currentPage = 0;
+    renderMainTabs();
+    renderSubTabs();
+    renderProducts();
+  };
+
+  const headerLogoBtn = document.getElementById("header-logo-btn");
+  if (headerLogoBtn) {
+    headerLogoBtn.addEventListener("click", resetToHome);
+  }
+
+  const homeBtn = document.querySelector(".home-button");
+  if (homeBtn) {
+    homeBtn.addEventListener("click", resetToHome);
+  }
+
   clearCartButton.addEventListener("click", () => {
     clearOrderState();
   });
