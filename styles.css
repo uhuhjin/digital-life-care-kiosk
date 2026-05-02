@@ -230,6 +230,11 @@ button {
   justify-self: center;
 }
 
+.product-visual img,
+.option-visual img {
+  display: block;
+}
+
 .product-visual {
   --drink-scale: var(--product-visual-scale);
   align-self: end;
@@ -244,7 +249,32 @@ button {
   width: 96px;
   height: 96px;
   border-radius: 14px;
-  background: #f5f3eb;
+  background: transparent;
+}
+
+.product-visual.has-photo,
+.option-visual.has-photo {
+  overflow: hidden;
+  border-radius: 10px;
+  background: transparent;
+}
+
+.product-visual.has-photo::before,
+.product-visual.has-photo::after,
+.option-visual.has-photo::before,
+.option-visual.has-photo::after {
+  content: none;
+}
+
+.product-visual.has-photo .ice-bubbles,
+.product-visual.has-photo .ice-label,
+.product-visual.has-photo .crema,
+.product-visual.has-photo .topping,
+.option-visual.has-photo .ice-bubbles,
+.option-visual.has-photo .ice-label,
+.option-visual.has-photo .crema,
+.option-visual.has-photo .topping {
+  display: none;
 }
 
 .product-visual::before,
@@ -634,6 +664,7 @@ button {
   place-items: center;
   padding: 16px;
   background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
 .modal.hidden {
