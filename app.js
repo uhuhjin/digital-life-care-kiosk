@@ -590,6 +590,7 @@ const orderRowTemplate = document.getElementById("order-row-template");
 
 let responsiveRenderFrame = 0;
 let responsiveLayoutKey = "";
+const documentRoot = document.documentElement;
 
 const formatPrice = (value) => `${value.toLocaleString("ko-KR")}원`;
 
@@ -691,7 +692,41 @@ function applyResponsiveLayout() {
   }
 
   const layout = getResponsiveLayoutState();
-  const nextKey = JSON.stringify(layout);
+  const { width, height } = kioskScreen.getBoundingClientRect();
+  const modalWidthInset =
+    layout.widthTier === "tight" ? 12 : layout.widthTier === "narrow" ? 16 : 20;
+  const modalHeightInset = layout.heightTier === "tight" ? 12 : 20;
+  const modalWidth = Math.max(
+    0,
+    Math.floor(Math.min(520, window.innerWidth - 24, width - modalWidthInset)),
+  );
+  const modalMaxHeight = Math.max(
+    0,
+    Math.floor(Math.min(760, window.innerHeight - 24, height - modalHeightInset)),
+  );
+  const modalPadding =
+    layout.widthTier === "tight"
+      ? 12
+      : layout.widthTier === "narrow" || layout.heightTier === "tight"
+        ? 14
+        : 18;
+  const modalGap = layout.heightTier === "tight" ? 10 : 14;
+  const optionVisualSize =
+    layout.widthTier === "tight"
+      ? 72
+      : layout.widthTier === "narrow"
+        ? 80
+        : layout.widthTier === "compact" || layout.heightTier !== "base"
+          ? 88
+          : 96;
+  const nextKey = JSON.stringify({
+    ...layout,
+    modalWidth,
+    modalMaxHeight,
+    modalPadding,
+    modalGap,
+    optionVisualSize,
+  });
 
   if (nextKey === responsiveLayoutKey) {
     return false;
@@ -707,6 +742,13 @@ function applyResponsiveLayout() {
   kioskScreen.style.setProperty("--order-qty-width", `${layout.orderQtyWidth}px`);
   kioskScreen.style.setProperty("--order-price-width", `${layout.orderPriceWidth}px`);
   kioskScreen.style.setProperty("--order-gap", `${layout.orderGap}px`);
+  documentRoot.dataset.kioskWidthTier = layout.widthTier;
+  documentRoot.dataset.kioskHeightTier = layout.heightTier;
+  documentRoot.style.setProperty("--modal-card-width", `${modalWidth}px`);
+  documentRoot.style.setProperty("--modal-card-max-height", `${modalMaxHeight}px`);
+  documentRoot.style.setProperty("--modal-card-padding", `${modalPadding}px`);
+  documentRoot.style.setProperty("--modal-card-gap", `${modalGap}px`);
+  documentRoot.style.setProperty("--option-visual-size", `${optionVisualSize}px`);
 
   return true;
 }

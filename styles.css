@@ -9,6 +9,11 @@
   --brown: #4a3620;
   --red: #c45145;
   --shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+  --modal-card-width: min(520px, calc(100vw - 32px));
+  --modal-card-max-height: calc(100dvh - 32px);
+  --modal-card-padding: 18px;
+  --modal-card-gap: 14px;
+  --option-visual-size: 96px;
 }
 
 * {
@@ -246,8 +251,8 @@ button {
 .option-visual {
   --drink-scale: 1;
   align-self: center;
-  width: 96px;
-  height: 96px;
+  width: var(--option-visual-size);
+  height: var(--option-visual-size);
   border-radius: 14px;
   background: transparent;
 }
@@ -663,6 +668,7 @@ button {
   display: grid;
   place-items: center;
   padding: 16px;
+  overflow: auto;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
@@ -672,11 +678,27 @@ button {
 }
 
 .modal-card {
-  width: min(520px, calc(100vw - 32px));
+  width: min(var(--modal-card-width), calc(100vw - 24px));
+  max-height: min(var(--modal-card-max-height), calc(100dvh - 24px));
+  display: grid;
+  gap: var(--modal-card-gap);
   border-radius: 18px;
   background: #fff;
   box-shadow: var(--shadow);
-  padding: 18px;
+  padding: var(--modal-card-padding);
+  overflow: hidden;
+}
+
+#option-modal .modal-card {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+
+#checkout-modal .modal-card {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.modal-card > * {
+  min-width: 0;
 }
 
 .modal-head,
@@ -699,6 +721,12 @@ button {
   font-size: 1.1rem;
 }
 
+.modal-head > div,
+.option-copy,
+.option-total {
+  min-width: 0;
+}
+
 .modal-close {
   width: 34px;
   height: 34px;
@@ -711,14 +739,16 @@ button {
 
 .option-preview {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
-  gap: 12px;
-  margin: 14px 0;
+  grid-template-columns: var(--option-visual-size) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--modal-card-gap);
+  margin: 0;
 }
 
 .option-copy strong {
   display: block;
   font-size: 1rem;
+  overflow-wrap: anywhere;
 }
 
 .option-copy p {
@@ -736,6 +766,10 @@ button {
 .option-groups {
   display: grid;
   gap: 12px;
+  min-height: 0;
+  align-content: start;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .option-group {
@@ -796,7 +830,7 @@ button {
 }
 
 .checkout-message {
-  margin: 14px 0;
+  margin: 0;
   padding: 18px 16px;
   border-radius: 14px;
   border: 1px solid #ddd3c0;
@@ -805,12 +839,13 @@ button {
   font-size: 0.88rem;
   line-height: 1.6;
   text-align: center;
+  overflow: auto;
 }
 
 .checkout-list {
   display: grid;
   gap: 10px;
-  margin: 14px 0;
+  margin: 0;
 }
 
 .checkout-row {
@@ -1014,11 +1049,60 @@ button {
 
   .modal-foot {
     flex-wrap: wrap;
+    align-items: stretch;
   }
 
   .confirm-button {
     width: 100%;
   }
+}
+
+:root[data-kiosk-width-tier="compact"] .modal-card,
+:root[data-kiosk-height-tier="compact"] .modal-card {
+  border-radius: 16px;
+}
+
+:root[data-kiosk-width-tier="compact"] #option-modal .option-preview,
+:root[data-kiosk-width-tier="narrow"] #option-modal .option-preview,
+:root[data-kiosk-width-tier="tight"] #option-modal .option-preview,
+:root[data-kiosk-height-tier="tight"] #option-modal .option-preview {
+  grid-template-columns: 1fr;
+}
+
+:root[data-kiosk-width-tier="narrow"] .modal-foot,
+:root[data-kiosk-width-tier="tight"] .modal-foot,
+:root[data-kiosk-height-tier="tight"] .modal-foot {
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+:root[data-kiosk-width-tier="narrow"] .option-total,
+:root[data-kiosk-width-tier="tight"] .option-total,
+:root[data-kiosk-height-tier="tight"] .option-total {
+  width: 100%;
+}
+
+:root[data-kiosk-width-tier="narrow"] .confirm-button,
+:root[data-kiosk-width-tier="tight"] .confirm-button,
+:root[data-kiosk-height-tier="tight"] .confirm-button {
+  width: 100%;
+}
+
+:root[data-kiosk-width-tier="narrow"] .choice-button,
+:root[data-kiosk-width-tier="tight"] .choice-button,
+:root[data-kiosk-height-tier="tight"] .choice-button {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 0.74rem;
+}
+
+:root[data-kiosk-height-tier="tight"] .modal-head h2 {
+  font-size: 1rem;
+}
+
+:root[data-kiosk-height-tier="tight"] .option-copy p,
+:root[data-kiosk-width-tier="tight"] .option-copy p {
+  font-size: 0.8rem;
 }
 
 .kiosk-screen[data-order-layout="stacked"] .order-section {
