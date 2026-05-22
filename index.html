@@ -8,7 +8,24 @@
 </head>
 <body>
   <div class="app-shell">
-    <main class="kiosk-screen" aria-label="메가MGC커피 키오스크">
+    <section class="intro-screen" id="intro-screen" aria-label="메가MGC커피 인트로 화면">
+      <div class="intro-brand">
+        <img src="메가커피_이미지/logo/logo.png" alt="메가MGC커피" class="intro-logo">
+      </div>
+
+      <div class="intro-start-panel">
+        <div class="intro-message">
+          <p>터치해서 주문을 시작하세요</p>
+        </div>
+
+        <div class="intro-actions" aria-label="시작 메뉴">
+          <button class="intro-action-button order-start-button" id="order-start-button" type="button">주문하기</button>
+          <button class="intro-action-button barrier-free-start-button" id="barrier-free-start-button" type="button">베리어프리</button>
+        </div>
+      </div>
+    </section>
+
+    <main class="kiosk-screen is-hidden" id="kiosk-screen" aria-label="메가MGC커피 키오스크">
       <header class="screen-header">
         <div class="utility-bar">
           <button class="utility-button home-button" type="button">처음으로</button>

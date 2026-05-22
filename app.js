@@ -552,11 +552,19 @@ const state = {
   activeItemId: null,
   optionSelections: {},
   cart: [],
+  checkoutStep: "review",
+  checkoutServiceType: null,
+  checkoutPaymentMethod: null,
+  disposableChoice: "selected",
+  stampPhone: "010",
   remainingSeconds: 117,
   timerId: null,
 };
 
+const introScreen = document.getElementById("intro-screen");
 const kioskScreen = document.querySelector(".kiosk-screen");
+const orderStartButton = document.getElementById("order-start-button");
+const barrierFreeStartButton = document.getElementById("barrier-free-start-button");
 const mainTabBar = document.getElementById("main-tab-bar");
 const subTabBar = document.getElementById("sub-tab-bar");
 const productGrid = document.getElementById("product-grid");
@@ -583,6 +591,8 @@ const checkoutSummary = document.getElementById("checkout-summary");
 const checkoutTotalPrice = document.getElementById("checkout-total-price");
 const closeCheckoutButton = document.getElementById("close-checkout-button");
 const confirmCheckoutButton = document.getElementById("confirm-checkout-button");
+const checkoutTitle = document.getElementById("checkout-title");
+const checkoutKicker = checkoutModal.querySelector(".modal-kicker");
 const mainTabTemplate = document.getElementById("main-tab-template");
 const subTabTemplate = document.getElementById("sub-tab-template");
 const productCardTemplate = document.getElementById("product-card-template");
@@ -593,6 +603,27 @@ let responsiveLayoutKey = "";
 const documentRoot = document.documentElement;
 
 const formatPrice = (value) => `${value.toLocaleString("ko-KR")}원`;
+const BARRIER_FREE_PAGE = "barrier-free.html";
+const CHECKOUT_RECOMMENDATION_IDS = [
+  ...MENU_ITEMS.filter((item) => item.mainTabs.includes("new"))
+    .slice(0, 2)
+    .map((item) => item.id),
+  "patbingsu-gelato-parfait",
+];
+
+const PAYMENT_METHODS = [
+  { id: "card", label: "카드결제", icon: "▭" },
+  { id: "mcard", label: "엠카드", icon: "M" },
+  { id: "kakao", label: "카카오페이", icon: "pay" },
+  { id: "payco", label: "페이코", icon: "PAYCO" },
+  { id: "naver", label: "네이버페이", icon: "N" },
+  { id: "zero", label: "제로페이", icon: "zero" },
+  { id: "bc", label: "BC페이북", icon: "book" },
+  { id: "hana", label: "하나 Pay", icon: "1Q" },
+  { id: "kb", label: "KB Pay", icon: "KB" },
+  { id: "coupon", label: "쿠폰사용", icon: "♪" },
+  { id: "prepaid", label: "메가선불페이", icon: "▣" },
+];
 
 function getActiveMainTab() {
   return MAIN_TABS.find((tab) => tab.id === state.activeMainTab);
@@ -1116,6 +1147,13 @@ function addActiveItemToCart() {
   }
 
   const selections = getSelections(item);
+  addItemToCart(item, selections);
+  resetTimer();
+  renderCart();
+  closeOptionModal();
+}
+
+function addItemToCart(item, selections = getDefaultSelections(item)) {
   const optionText = buildOptionSummary(item, selections);
   const unitPrice = getSelectionPrice(item, selections);
   const key = `${item.id}|${JSON.stringify(selections)}`;
@@ -1132,10 +1170,300 @@ function addActiveItemToCart() {
       quantity: 1,
     });
   }
+}
 
-  resetTimer();
-  renderCart();
-  closeOptionModal();
+function setCheckoutHeader(kicker, title) {
+  checkoutKicker.textContent = kicker;
+  checkoutTitle.textContent = title;
+}
+
+function appendCheckoutActions(parent, actions) {
+  const actionRow = document.createElement("div");
+  actionRow.className = "checkout-action-row";
+
+  actions.forEach((action) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `checkout-flow-button ${action.className || ""}`.trim();
+    button.dataset.checkoutAction = action.action;
+    if (action.value) {
+      button.dataset.value = action.value;
+    }
+    button.textContent = action.label;
+    actionRow.appendChild(button);
+  });
+
+  parent.appendChild(actionRow);
+}
+
+function getCheckoutRecommendationItems() {
+  return CHECKOUT_RECOMMENDATION_IDS.map((id) => MENU_ITEMS.find((item) => item.id === id)).filter(Boolean);
+}
+
+function resetCheckoutFlow() {
+  state.checkoutStep = "review";
+  state.checkoutServiceType = null;
+  state.checkoutPaymentMethod = null;
+  state.disposableChoice = "selected";
+  state.stampPhone = "010";
+}
+
+function renderCheckoutReview() {
+  const totals = getCartTotals();
+  setCheckoutHeader("주문 세부내역", "주문 세부내역을 다시 한번 확인하여 주세요");
+  checkoutSummary.className = "checkout-message checkout-stage checkout-review-stage";
+  checkoutSummary.innerHTML = "";
+  checkoutTotalPrice.textContent = formatPrice(totals.total);
+
+  const orderPanel = document.createElement("section");
+  orderPanel.className = "checkout-order-panel";
+
+  state.cart.forEach((cartItem, index) => {
+    const row = document.createElement("div");
+    row.className = "checkout-order-row";
+    row.innerHTML = `
+      <div>
+        <strong>${index + 1}. ${cartItem.name}</strong>
+        <p>${cartItem.optionText || "기본"}</p>
+      </div>
+      <span>${cartItem.quantity}개</span>
+      <b>${formatPrice(cartItem.unitPrice * cartItem.quantity)}</b>
+    `;
+    orderPanel.appendChild(row);
+  });
+
+  const notice = document.createElement("p");
+  notice.className = "checkout-notice";
+  notice.textContent = "※ 매장 이용 시 일회용컵 사용 불가 ※";
+
+  const recommendSection = document.createElement("section");
+  recommendSection.className = "checkout-recommend-section";
+  recommendSection.innerHTML = "<h3>이런 메뉴는 어떠세요?</h3>";
+
+  const recommendGrid = document.createElement("div");
+  recommendGrid.className = "checkout-recommend-grid";
+  getCheckoutRecommendationItems().forEach((item) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "checkout-recommend-card";
+    card.dataset.checkoutAction = "add-recommendation";
+    card.dataset.value = item.id;
+
+    const visual = document.createElement("span");
+    visual.className = "checkout-recommend-visual";
+    if (item.image) {
+      const img = document.createElement("img");
+      img.src = encodeURI(item.image);
+      img.alt = item.name;
+      visual.appendChild(img);
+    }
+
+    const name = document.createElement("strong");
+    name.textContent = item.name;
+    const price = document.createElement("em");
+    price.textContent = formatPrice(item.price);
+
+    card.appendChild(visual);
+    card.appendChild(name);
+    card.appendChild(price);
+    recommendGrid.appendChild(card);
+  });
+  recommendSection.appendChild(recommendGrid);
+
+  const summaryBar = document.createElement("div");
+  summaryBar.className = "checkout-total-bar";
+  summaryBar.innerHTML = `
+    <span>총 수량 <strong>${totals.count}개</strong></span>
+    <span>총 결제금액 <strong>${formatPrice(totals.total)}</strong></span>
+  `;
+
+  checkoutSummary.appendChild(orderPanel);
+  checkoutSummary.appendChild(notice);
+  checkoutSummary.appendChild(recommendSection);
+  checkoutSummary.appendChild(summaryBar);
+  appendCheckoutActions(checkoutSummary, [
+    { label: "돌아가기", action: "back", className: "is-dark" },
+    { label: "먹고가기", action: "service", value: "dine-in", className: "is-yellow" },
+    { label: "포장하기", action: "service", value: "takeout", className: "is-red" },
+  ]);
+}
+
+function renderPaymentSelection() {
+  const totals = getCartTotals();
+  setCheckoutHeader("결제수단 선택", `결제수단 선택 (${formatPrice(totals.total)})`);
+  checkoutSummary.className = "checkout-message checkout-stage checkout-payment-stage";
+  checkoutSummary.innerHTML = "";
+  checkoutTotalPrice.textContent = formatPrice(totals.total);
+
+  const serviceLabel = state.checkoutServiceType === "takeout" ? "포장하기" : "먹고가기";
+  const content = document.createElement("div");
+  content.className = "payment-method-content";
+  content.innerHTML = `
+    <div class="checkout-step-block">
+      <p><span>STEP1</span> 제휴할인을 선택해주세요.</p>
+      <div class="discount-choice-row">
+        <button type="button">KT VIP초이스(통합 월 1회)</button>
+        <button type="button">SKT우주패스</button>
+      </div>
+    </div>
+    <div class="checkout-step-block">
+      <p><span>STEP2</span> 결제수단을 선택해주세요.</p>
+    </div>
+  `;
+
+  const grid = document.createElement("div");
+  grid.className = "payment-method-grid";
+  PAYMENT_METHODS.forEach((method) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "payment-method-button";
+    button.dataset.checkoutAction = "payment";
+    button.dataset.value = method.id;
+    button.innerHTML = `<strong>${method.icon}</strong><span>${method.label}</span>`;
+    grid.appendChild(button);
+  });
+
+  const totalLine = document.createElement("div");
+  totalLine.className = "payment-total-line";
+  totalLine.innerHTML = `
+    <span>이용방법: ${serviceLabel}</span>
+    <b>주문금액: ${formatPrice(totals.total)} → 결제금액: ${formatPrice(totals.total)}</b>
+  `;
+
+  checkoutSummary.appendChild(content);
+  checkoutSummary.appendChild(grid);
+  checkoutSummary.appendChild(totalLine);
+}
+
+function renderDisposableSelection() {
+  setCheckoutHeader("일회용품 선택", "일회용품 선택");
+  checkoutSummary.className = "checkout-message checkout-stage checkout-disposable-stage";
+  const choices = state.disposableChoice.split(",").filter(Boolean);
+  checkoutSummary.innerHTML = `
+    <div class="disposable-panel">
+      <label><input type="checkbox" name="disposable-option" value="selected" ${choices.includes("selected") ? "checked" : ""}> 선택안함</label>
+      <label><input type="checkbox" name="disposable-option" value="napkin" ${choices.includes("napkin") ? "checked" : ""}> 빨대/스틱 필요</label>
+      <label><input type="checkbox" name="disposable-option" value="carrier" ${choices.includes("carrier") ? "checked" : ""}> 캐리어/봉투 필요</label>
+      <label><input type="checkbox" name="disposable-option" value="direct" ${choices.includes("direct") ? "checked" : ""}> 직접 가져 갈게요</label>
+    </div>
+  `;
+  appendCheckoutActions(checkoutSummary, [
+    { label: "선택완료", action: "disposable-submit", className: "is-yellow" },
+  ]);
+}
+
+function renderStampPrompt() {
+  setCheckoutHeader("스탬프 적립", "스탬프 적립");
+  checkoutSummary.className = "checkout-message checkout-stage checkout-stamp-stage";
+  checkoutSummary.innerHTML = `
+    <div class="stamp-panel">
+      <div class="stamp-mark">M<br>GC</div>
+      <p>스탬프를 적립하시겠습니까?</p>
+    </div>
+  `;
+  appendCheckoutActions(checkoutSummary, [
+    { label: "적립하기", action: "stamp-earn", className: "is-yellow" },
+    { label: "닫기", action: "stamp-close", className: "is-dark" },
+  ]);
+}
+
+function renderStampPhoneInput() {
+  setCheckoutHeader("MEGA COFFEE", "스탬프 적립");
+  checkoutSummary.className = "checkout-message checkout-stage checkout-phone-stage";
+  checkoutSummary.innerHTML = `
+    <div class="stamp-keypad-panel">
+      <p class="stamp-phone-title">MEGA MGC COFFEE 멤버십 스탬프 적립입니다.</p>
+      <p class="stamp-phone-guide">메가MGC커피 앱에서 스탬프카드 적립을 위하여<br>고객님의 휴대폰 번호를 입력해주세요.</p>
+      <output class="stamp-phone-number" id="stamp-phone-number">${state.stampPhone}</output>
+      <div class="stamp-keypad" aria-label="휴대폰 번호 키패드">
+        <button type="button" data-checkout-action="phone-digit" data-value="7">7</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="8">8</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="9">9</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="4">4</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="5">5</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="6">6</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="1">1</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="2">2</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="3">3</button>
+        <button type="button" data-checkout-action="phone-clear">전체삭제</button>
+        <button type="button" data-checkout-action="phone-digit" data-value="0">0</button>
+        <button type="button" data-checkout-action="phone-delete">×</button>
+      </div>
+      <p class="stamp-error" id="stamp-error" aria-live="polite"></p>
+      <div class="stamp-phone-actions">
+        <button type="button" data-checkout-action="stamp-cancel">취소</button>
+        <button type="button" data-checkout-action="stamp-submit">확인</button>
+      </div>
+      <p class="stamp-phone-policy">휴대폰 번호 입력 후 확인 버튼을 눌러주세요.</p>
+    </div>
+  `;
+}
+
+function renderCardInsert() {
+  const totals = getCartTotals();
+  setCheckoutHeader("카드 결제 (간편 결제)", "카드 결제 (간편 결제)");
+  checkoutSummary.className = "checkout-message checkout-stage checkout-card-stage";
+  checkoutSummary.innerHTML = `
+    <div class="card-guide">
+      <p>다음 그림과 같이 신용/체크카드를 넣어주세요.<br>(삼성/LG페이는 핸드폰을 카드리더기에 터치해주세요.)</p>
+      <div class="card-reader">
+        <span class="reader-slot"></span>
+        <span class="credit-card">CreditCard</span>
+      </div>
+    </div>
+    <div class="card-payment-detail">
+      <span>총 결제금액 <strong>${formatPrice(totals.total)}</strong></span>
+      <span>할부개월 <strong>일시불</strong></span>
+      <span>카드번호 <strong>-</strong></span>
+    </div>
+  `;
+  appendCheckoutActions(checkoutSummary, [
+    { label: "취소", action: "card-cancel", className: "is-dark" },
+    { label: "승인 요청", action: "card-approve", className: "is-red" },
+  ]);
+}
+
+function renderPaymentComplete() {
+  setCheckoutHeader("결제 완료", "결제가 완료 되었습니다.");
+  checkoutSummary.className = "checkout-message checkout-stage checkout-complete-stage";
+  checkoutSummary.innerHTML = "<p>주문이 정상적으로 접수되었습니다.</p>";
+  appendCheckoutActions(checkoutSummary, [
+    { label: "확인", action: "done", className: "is-yellow" },
+  ]);
+}
+
+function renderCheckoutModal() {
+  if (state.checkoutStep === "payment") {
+    renderPaymentSelection();
+    return;
+  }
+
+  if (state.checkoutStep === "disposable") {
+    renderDisposableSelection();
+    return;
+  }
+
+  if (state.checkoutStep === "stamp") {
+    renderStampPrompt();
+    return;
+  }
+
+  if (state.checkoutStep === "stamp-phone") {
+    renderStampPhoneInput();
+    return;
+  }
+
+  if (state.checkoutStep === "card") {
+    renderCardInsert();
+    return;
+  }
+
+  if (state.checkoutStep === "complete") {
+    renderPaymentComplete();
+    return;
+  }
+
+  renderCheckoutReview();
 }
 
 function openCheckoutModal() {
@@ -1144,25 +1472,78 @@ function openCheckoutModal() {
     return;
   }
 
-  checkoutSummary.textContent = "확인을 누르면 담긴 메뉴와 주문 시간이 초기화됩니다.";
-  checkoutTotalPrice.textContent = formatPrice(getCartTotals().total);
+  resetCheckoutFlow();
+  renderCheckoutModal();
+  closeCheckoutButton.hidden = false;
   checkoutModal.classList.remove("hidden");
 }
 
 function closeCheckoutModal() {
   checkoutModal.classList.add("hidden");
+  resetCheckoutFlow();
 }
 
 function clearOrderState() {
   state.cart = [];
   state.activeItemId = null;
   state.optionSelections = {};
+  resetCheckoutFlow();
   checkoutSummary.textContent = "";
   checkoutTotalPrice.textContent = formatPrice(0);
   closeOptionModal();
   closeCheckoutModal();
   resetTimer();
   renderCart();
+}
+
+function showScreen(screenName) {
+  if (introScreen) {
+    introScreen.classList.toggle("is-hidden", screenName !== "intro");
+  }
+
+  if (kioskScreen) {
+    kioskScreen.classList.toggle("is-hidden", screenName !== "menu");
+  }
+}
+
+function resetMenuState() {
+  clearOrderState();
+  state.activeMainTab = "recommended";
+  state.activeSubTab = "espresso";
+  state.currentPage = 0;
+  renderMainTabs();
+  renderSubTabs();
+  renderProducts();
+}
+
+function stopTimer() {
+  if (state.timerId) {
+    window.clearInterval(state.timerId);
+    state.timerId = null;
+  }
+}
+
+function showIntroScreen() {
+  stopTimer();
+  resetMenuState();
+  resetTimer();
+  showScreen("intro");
+}
+
+function showMenuScreen() {
+  resetMenuState();
+  showScreen("menu");
+  applyResponsiveLayout();
+  renderProducts();
+  resetTimer();
+  startTimer();
+}
+
+function openBarrierFreePage() {
+  stopTimer();
+  closeOptionModal();
+  closeCheckoutModal();
+  window.location.href = BARRIER_FREE_PAGE;
 }
 
 function resetTimer() {
@@ -1187,24 +1568,22 @@ function startTimer() {
 }
 
 function initializeEvents() {
-  const resetToHome = () => {
-    clearOrderState();
-    state.activeMainTab = "recommended";
-    state.activeSubTab = "espresso";
-    state.currentPage = 0;
-    renderMainTabs();
-    renderSubTabs();
-    renderProducts();
-  };
+  if (orderStartButton) {
+    orderStartButton.addEventListener("click", showMenuScreen);
+  }
+
+  if (barrierFreeStartButton) {
+    barrierFreeStartButton.addEventListener("click", openBarrierFreePage);
+  }
 
   const headerLogoBtn = document.getElementById("header-logo-btn");
   if (headerLogoBtn) {
-    headerLogoBtn.addEventListener("click", resetToHome);
+    headerLogoBtn.addEventListener("click", showIntroScreen);
   }
 
   const homeBtn = document.querySelector(".home-button");
   if (homeBtn) {
-    homeBtn.addEventListener("click", resetToHome);
+    homeBtn.addEventListener("click", showIntroScreen);
   }
 
   clearCartButton.addEventListener("click", () => {
@@ -1225,10 +1604,164 @@ function initializeEvents() {
   });
   closeOptionButton.addEventListener("click", closeOptionModal);
   addToCartButton.addEventListener("click", addActiveItemToCart);
-  closeCheckoutButton.addEventListener("click", clearOrderState);
+  closeCheckoutButton.addEventListener("click", closeCheckoutModal);
 
   confirmCheckoutButton.addEventListener("click", () => {
     clearOrderState();
+  });
+
+  checkoutSummary.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-checkout-action]");
+    if (!button) {
+      return;
+    }
+
+    const { checkoutAction: action, value } = button.dataset;
+
+    if (action === "back") {
+      closeCheckoutModal();
+      return;
+    }
+
+    if (action === "add-recommendation") {
+      const item = MENU_ITEMS.find((entry) => entry.id === value);
+      if (item) {
+        addItemToCart(item);
+        resetTimer();
+        renderCart();
+        renderCheckoutModal();
+      }
+      return;
+    }
+
+    if (action === "service") {
+      state.checkoutServiceType = value;
+      state.checkoutStep = value === "takeout" ? "disposable" : "payment";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "disposable-submit") {
+      const checkedOptions = Array.from(
+        checkoutSummary.querySelectorAll('input[name="disposable-option"]:checked'),
+      ).map((input) => input.value);
+      state.disposableChoice = checkedOptions.join(",") || "selected";
+      state.checkoutStep = "payment";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "payment") {
+      state.checkoutPaymentMethod = value;
+      state.checkoutStep = "stamp";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "stamp-earn") {
+      state.stampPhone = "010";
+      state.checkoutStep = "stamp-phone";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "stamp-close") {
+      state.checkoutStep = "card";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "phone-digit") {
+      if (state.stampPhone.length < 11) {
+        state.stampPhone += value;
+      }
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "phone-clear") {
+      state.stampPhone = "010";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "phone-delete") {
+      state.stampPhone = state.stampPhone.length > 3 ? state.stampPhone.slice(0, -1) : "010";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "stamp-cancel") {
+      state.checkoutStep = "card";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "stamp-submit") {
+      const error = document.getElementById("stamp-error");
+      if (state.stampPhone.length < 10) {
+        if (error) {
+          error.textContent = "휴대폰 번호를 다시 확인해주세요.";
+        }
+        return;
+      }
+
+      state.checkoutStep = "card";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "card-cancel") {
+      state.checkoutStep = "payment";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "card-approve") {
+      state.checkoutStep = "complete";
+      renderCheckoutModal();
+      return;
+    }
+
+    if (action === "done") {
+      clearOrderState();
+    }
+  });
+
+  checkoutSummary.addEventListener("change", (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.name !== "disposable-option") {
+      return;
+    }
+
+    const inputs = Array.from(
+      checkoutSummary.querySelectorAll('input[name="disposable-option"]'),
+    );
+    const noneInput = inputs.find((entry) => entry.value === "selected");
+
+    if (input.value === "selected" && input.checked) {
+      inputs.forEach((entry) => {
+        if (entry !== input) {
+          entry.checked = false;
+        }
+      });
+      state.disposableChoice = "selected";
+      return;
+    }
+
+    if (input.value !== "selected" && input.checked && noneInput) {
+      noneInput.checked = false;
+    }
+
+    if (!inputs.some((entry) => entry.checked) && noneInput) {
+      noneInput.checked = true;
+    }
+
+    state.disposableChoice =
+      inputs
+        .filter((entry) => entry.checked)
+        .map((entry) => entry.value)
+        .join(",") || "selected";
   });
 
   optionModal.addEventListener("click", (event) => {
@@ -1246,9 +1779,9 @@ function initialize() {
   renderProducts();
   renderCart();
   resetTimer();
-  startTimer();
   initializeEvents();
   initializeResponsiveLayout();
+  showScreen("intro");
 }
 
 initialize();

@@ -1,0 +1,122 @@
+:root {
+  --shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  background: linear-gradient(180deg, #3b311f 0%, #1d1812 100%);
+  color: #31291d;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+}
+
+.app-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+}
+
+.barrier-free-screen {
+  position: relative;
+  width: min(calc((100dvh - 20px) * 0.56), calc(100vw - 20px), 480px);
+  height: min(calc(100dvh - 20px), 854px);
+  aspect-ratio: 9 / 16;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(18px, 6cqw, 28px);
+  padding: clamp(16px, 5cqw, 28px);
+  overflow: hidden;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  container-type: inline-size;
+}
+
+.barrier-free-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: clamp(54px, 16cqw, 76px);
+}
+
+.barrier-free-logo {
+  width: min(64%, 210px);
+  max-height: 58px;
+  object-fit: contain;
+}
+
+.barrier-free-back-button {
+  min-width: clamp(76px, 22cqw, 104px);
+  min-height: clamp(42px, 12cqw, 54px);
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #222;
+  color: #fff;
+  font-size: clamp(0.82rem, 3.6cqw, 1rem);
+  font-weight: 900;
+}
+
+.barrier-free-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: clamp(12px, 4cqw, 20px);
+  min-height: 0;
+}
+
+.barrier-free-category {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  border-radius: 8px;
+  color: #fff;
+  font-size: clamp(1.6rem, 8.5cqw, 2.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: center;
+  word-break: keep-all;
+  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.16);
+}
+
+.barrier-free-category.is-coffee {
+  background: #7b3f00;
+}
+
+.barrier-free-category.is-drink {
+  background: #0067d8;
+}
+
+.barrier-free-category.is-food {
+  background: #d43f00;
+}
+
+.barrier-free-category.is-goods {
+  background: #008c55;
+}
