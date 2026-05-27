@@ -1,26 +1,759 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>메가MGC커피 베리어프리 메뉴</title>
-  <link rel="stylesheet" href="barrier-free.css">
-</head>
-<body>
-  <div class="app-shell">
-    <main class="barrier-free-screen" aria-label="베리어프리 메뉴 화면">
-      <div class="barrier-free-head">
-        <img src="메가커피_이미지/logo/logo.png" alt="메가MGC커피" class="barrier-free-logo">
-        <a class="barrier-free-back-button" href="index.html">처음으로</a>
-      </div>
+  <title>메가MGC커피 어르신용 쉬운 주문</title>
+  <style>
+    /* 기본 색상 변수 (메가커피 스타일 반영) */
+    :root {
+      --mega-yellow: #fcd11e;
+      --mega-brown: #3b311f;
+      --mega-dark: #1d1812;
+      --mega-text: #31291d;
+      --mega-gray: #f6f4ee;
+      --mega-red: #e53935;
+      --mega-blue: #1e88e5;
+      --shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
 
-      <div class="barrier-free-grid" aria-label="큰 글씨 메뉴 분류">
-        <button class="barrier-free-category is-coffee" type="button">커피</button>
-        <button class="barrier-free-category is-drink" type="button">일반 음료</button>
-        <button class="barrier-free-category is-food" type="button">푸드</button>
-        <button class="barrier-free-category is-goods" type="button">상품</button>
+    * {
+      box-sizing: border-box;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      user-select: none;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, var(--mega-brown) 0%, var(--mega-dark) 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: var(--mega-text);
+    }
+
+    /* 키오스크 화면 틀 */
+    .kiosk-screen {
+      position: relative;
+      width: min(calc((100dvh - 20px) * 0.56), calc(100vw - 20px), 540px);
+      height: min(calc(100dvh - 20px), 960px);
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+    }
+
+    /* 헤더 (로고 및 뒤로가기) */
+    .header {
+      background: var(--mega-brown);
+      padding: 20px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    .header-logo {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--mega-yellow);
+    }
+
+    .btn-home {
+      background: #5a4b33;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* 메인 컨텐츠 영역 */
+    .content {
+      flex: 1;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      background: var(--mega-gray);
+    }
+
+    /* 상단 안내 문구 */
+    .step-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 40px;
+      word-break: keep-all;
+      line-height: 1.4;
+      color: var(--mega-brown);
+    }
+
+    /* 버튼 그리드 (양자택일 & 큰 버튼) */
+    .button-grid {
+      display: grid;
+      gap: 20px;
+      flex: 1;
+      align-content: start;
+    }
+
+    .button-grid.col-1 {
+      grid-template-columns: 1fr;
+    }
+
+    .button-grid.col-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* 거대한 터치 버튼 */
+    .btn-huge {
+      background: white;
+      border: 4px solid #ddd;
+      border-radius: 16px;
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--mega-text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+      padding: 30px;
+      gap: 15px;
+    }
+
+    .btn-huge:active {
+      transform: scale(0.98);
+      background: #f0f0f0;
+    }
+
+    .btn-huge.primary {
+      background: var(--mega-yellow);
+      border-color: var(--mega-yellow);
+    }
+
+    .btn-huge.secondary {
+      background: #e0e0e0;
+      border-color: #ccc;
+      color: #333;
+    }
+
+    .btn-huge.hot {
+      border-color: var(--mega-red);
+      color: var(--mega-red);
+    }
+
+    .btn-huge.ice {
+      border-color: var(--mega-blue);
+      color: var(--mega-blue);
+    }
+
+    /* 장바구니 하단 고정 영역 */
+    .cart-footer {
+      background: white;
+      border-top: 3px solid #ddd;
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .cart-footer.active {
+      display: flex;
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .cart-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 15px;
+    }
+
+    .btn-cart {
+      padding: 25px;
+      font-size: 1.8rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .btn-cart.add-more {
+      background: #ddd;
+      color: var(--mega-text);
+    }
+
+    .btn-cart.pay {
+      background: var(--mega-brown);
+      color: white;
+    }
+
+    /* 결제 안내 화면용 */
+    .message-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 30px;
+    }
+
+    .message-text {
+      font-size: 2.5rem;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    /* 메뉴 리스트용 작은 버튼 (사진 포함) */
+    .btn-menu {
+      background: white;
+      border: 3px solid #ddd;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .btn-menu:active {
+      background: var(--mega-yellow);
+    }
+
+    .menu-img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      background-color: #f0f0f0;
+    }
+
+    .menu-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .menu-info span:first-child {
+      word-break: break-word;
+      line-height: 1.3;
+    }
+
+    .menu-price {
+      color: var(--mega-brown);
+      font-size: 1.6rem;
+      margin-top: 5px;
+    }
+
+    /* 장바구니 확인 화면 (내역 리스트) 스타일 */
+    .cart-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .cart-item-card {
+      background: white;
+      border: 3px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cart-item-info {
+      flex: 1;
+      text-align: left;
+      min-width: 0;
+    }
+
+    .cart-item-name {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--mega-text);
+      word-break: break-word;
+      line-height: 1.3;
+    }
+
+    .cart-item-price {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--mega-brown);
+      margin-top: 5px;
+    }
+
+    .cart-item-qty {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-left: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn-qty-small {
+      width: 60px;
+      height: 60px;
+      font-size: 3rem;
+      font-weight: 900;
+      border-radius: 12px;
+      background: white;
+      border: 3px solid #ddd;
+      color: var(--mega-text);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-qty-small:active {
+      background: #f0f0f0;
+      transform: scale(0.95);
+    }
+
+    .qty-val {
+      font-size: 2.5rem;
+      font-weight: 900;
+      min-width: 30px;
+      text-align: center;
+      color: var(--mega-brown);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="kiosk-screen">
+    <!-- 공통 헤더 -->
+    <header class="header">
+      <div class="header-logo">MEGA MGC COFFEE</div>
+      <button class="btn-home" onclick="resetFlow()">처음으로</button>
+    </header>
+
+    <!-- 동적 화면 렌더링 영역 -->
+    <main class="content" id="app-content"></main>
+
+    <!-- 메뉴 탐색 중 하단 고정 장바구니 영역 -->
+    <footer class="cart-footer" id="cart-footer">
+      <div class="cart-total">
+        <span>총 결제금액</span>
+        <span id="cart-total-price">0원</span>
       </div>
-    </main>
+      <div class="cart-actions">
+        <button class="btn-cart add-more" onclick="renderCategory()">더 고르기</button>
+        <!-- 장바구니 확인 화면으로 이동 -->
+        <button class="btn-cart pay" onclick="renderCartReview()">장바구니 확인</button>
+      </div>
+    </footer>
   </div>
+
+  <script>
+    // --- 데이터 정의 ---
+    const menuData = {
+      coffee: [
+        { id: 'c1', name: '아메리카노', price: 1500, hasTemp: true, hasIceOption: true, image: '메가커피_이미지/menu/menu_(ICE)아메리카노.png' },
+        { id: 'c2', name: '꿀아메리카노', price: 2700, hasTemp: true, hasIceOption: true, image: '메가커피_이미지/menu/menu_(ICE)꿀아메리카노.png' },
+        { id: 'c3', name: '바닐라아메리카노', price: 2700, hasTemp: true, hasIceOption: true, image: '메가커피_이미지/menu/menu_(ICE)바닐라아메리카노.png' },
+        { id: 'c4', name: '헤이즐넛아메리카노', price: 2700, hasTemp: true, hasIceOption: true, image: '메가커피_이미지/menu/menu_(ICE)헤이즐넛아메리카노.png' },
+        { id: 'c5', name: '할메가커피', price: 1900, hasTemp: false, defaultTemp: 'ICE', hasIceOption: true, image: '메가커피_이미지/menu/menu_할메가커피.png' },
+        { id: 'c6', name: '카페라떼', price: 2900, hasTemp: true, hasIceOption: true, image: '메가커피_이미지/menu/menu_카페라떼.png' },
+        { id: 'c7', name: '바닐라라떼', price: 3400, hasTemp: true, hasIceOption: true, image: '메가커피_이미지/menu/menu_바닐라라떼.png' },
+        { id: 'c8', name: '카푸치노', price: 3200, hasTemp: false, defaultTemp: 'HOT', image: '메가커피_이미지/menu/menu_카푸치노.png' },
+        { id: 'c9', name: '에스프레소', price: 1500, hasTemp: false, defaultTemp: 'HOT', image: '메가커피_이미지/menu/menu_에스프레소.png' },
+        { id: 'c10', name: '디카페인 아메리카노', price: 3400, hasTemp: true, hasIceOption: true, image: '메가커피_이미지/menu/menu_(ICE)디카페인아메리카노.png' }
+      ],
+      beverage: [
+        { id: 'b1', name: '제로 부스트 에이드', price: 3000, hasTemp: false, defaultTemp: 'ICE', hasIceOption: true, hasSweetnessOption: true, image: '메가커피_이미지/menu/menu_제로부스트에이드.png' },
+        { id: 'b2', name: '블루베리요거트스무디', price: 3900, hasTemp: false, defaultTemp: 'ICE', hasSweetnessOption: true, image: '메가커피_이미지/menu/menu_블루베리요거트스무디.png' },
+        { id: 'b3', name: '저당 꿀배 XO야쿠르트', price: 3900, hasTemp: false, defaultTemp: 'ICE', hasIceOption: true, hasSweetnessOption: true, image: '메가커피_이미지/menu/menu_저당꿀배XO야구르트.png' },
+        { id: 'b4', name: '유자생강차', price: 3300, hasTemp: false, defaultTemp: 'HOT', hasSweetnessOption: true, image: '메가커피_이미지/menu/menu_유자생강차.png' },
+        { id: 'b5', name: '망고폼 자스민 티플레저', price: 3900, hasTemp: false, defaultTemp: 'ICE', hasIceOption: true, hasSweetnessOption: true, image: '메가커피_이미지/menu/menu_망고폼자스민티플레저.png' }
+      ],
+      food: [
+        { id: 'f1', name: '딸기요거트마카롱', price: 2800, hasTemp: false, image: '메가커피_이미지/menu/menu_딸기요거트마카롱.png' },
+        { id: 'f2', name: '아이스허니와앙슈', price: 3500, hasTemp: false, image: '메가커피_이미지/menu/menu_아이스허니와앙슈.png' },
+        { id: 'f3', name: '치즈케익', price: 4200, hasTemp: false, image: '메가커피_이미지/menu/menu_치즈케익.png' },
+        { id: 'f4', name: '팥빙 젤라또 파르페', price: 4500, hasTemp: false, image: '메가커피_이미지/menu/menu_팥빙젤라또파르페.png' },
+        { id: 'f5', name: '플레인크로플', price: 3300, hasTemp: false, image: '메가커피_이미지/menu/menu_플레인크로플.png' }
+      ],
+      goods: [
+        { id: 'g1', name: '메가 텀블러', price: 12000, hasTemp: false, hasColorOption: true, image: '메가커피_이미지/menu/menu_메가텀블러.png' }
+      ]
+    };
+
+    // --- 상태 관리 ---
+    // cart 배열에 {name, price, quantity} 형태로 담습니다.
+    let orderState = {
+      type: '',
+      cart: [],
+      tempMenu: null
+    };
+
+    const contentEl = document.getElementById('app-content');
+    const cartFooterEl = document.getElementById('cart-footer');
+    const cartTotalPriceEl = document.getElementById('cart-total-price');
+
+    // --- 유틸리티 ---
+    function formatPrice(price) {
+      return price.toLocaleString() + '원';
+    }
+
+    function updateCartUI() {
+      if (orderState.cart.length > 0) {
+        cartFooterEl.classList.add('active');
+        // 총 금액 계산 (가격 * 수량)
+        const total = orderState.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        cartTotalPriceEl.innerText = formatPrice(total);
+      } else {
+        cartFooterEl.classList.remove('active');
+      }
+    }
+
+    function resetFlow() {
+      orderState.type = '';
+      orderState.cart = [];
+      orderState.tempMenu = null;
+      updateCartUI();
+      renderOrderType();
+    }
+
+    // --- 화면 렌더링 함수들 ---
+
+    // 1. 매장/포장 선택 화면
+    function renderOrderType() {
+      cartFooterEl.classList.remove('active');
+      contentEl.innerHTML = `
+        <div class="step-title">어디서 드시겠습니까?</div>
+        <div class="button-grid col-1">
+          <button class="btn-huge primary" onclick="setOrderType('매장')">
+            매장 (먹고가기)
+          </button>
+          <button class="btn-huge primary" onclick="setOrderType('포장')">
+            포장 (가져가기)
+          </button>
+        </div>
+      `;
+    }
+
+    function setOrderType(type) {
+      orderState.type = type;
+      renderCategory();
+    }
+
+    // 2. 카테고리 선택 화면
+    function renderCategory() {
+      updateCartUI();
+      contentEl.innerHTML = `
+        <div class="step-title">어떤 메뉴를 고르시겠습니까?</div>
+        <div class="button-grid col-2">
+          <button class="btn-huge" onclick="renderMenu('coffee')"><br>커피</button>
+          <button class="btn-huge" onclick="renderMenu('beverage')"><br>음료</button>
+          <button class="btn-huge" onclick="renderMenu('food')"><br>푸드</button>
+          <button class="btn-huge" onclick="renderMenu('goods')"><br>상품</button>
+        </div>
+      `;
+    }
+
+    // 3. 메뉴 리스트 화면
+    function renderMenu(categoryKey) {
+      updateCartUI();
+      const items = menuData[categoryKey];
+      let html = `<div class="step-title">메뉴를 눌러주세요</div>`;
+      html += `<div class="button-grid col-1" style="gap:15px;">`;
+
+      items.forEach(item => {
+        html += `
+          <button class="btn-menu" onclick='startOptionFlow(${JSON.stringify(item)})'>
+            <img src="${item.image}" alt="${item.name}" class="menu-img" onerror="this.style.display='none'">
+            <div class="menu-info">
+              <span>${item.name}</span>
+              <span class="menu-price">${formatPrice(item.price)}</span>
+            </div>
+          </button>
+        `;
+      });
+
+      html += `</div>`;
+      contentEl.innerHTML = html;
+    }
+
+    // --- 4. 단계별 옵션 로직 ---
+    function startOptionFlow(item) {
+      // 메뉴 선택 시 하단 장바구니 영역 숨김
+      cartFooterEl.classList.remove('active');
+      orderState.tempMenu = {
+        item: item,
+        options: []
+      };
+      nextOptionStep();
+    }
+
+    function nextOptionStep() {
+      const item = orderState.tempMenu.item;
+      const opts = orderState.tempMenu.options;
+
+      // 옵션 1. 온도 (HOT/ICE)
+      if (item.hasTemp && !opts.find(o => o.type === 'temp')) {
+        contentEl.innerHTML = `
+          <div class="step-title">따뜻하게 드릴까요?<br>시원하게 드릴까요?</div>
+          <div class="button-grid col-1">
+            <button class="btn-huge hot" onclick="saveOption('temp', 'HOT')">따뜻하게 (HOT)</button>
+            <button class="btn-huge ice" onclick="saveOption('temp', 'ICE')">시원하게 (ICE)</button>
+          </div>
+        `;
+        return;
+      }
+
+      // 옵션 2. 얼음 (온도가 ICE일 때만 실행)
+      let currentTemp = opts.find(o => o.type === 'temp')?.value || item.defaultTemp;
+      if (currentTemp === 'ICE' && item.hasIceOption && !opts.find(o => o.type === 'ice')) {
+        contentEl.innerHTML = `
+          <div class="step-title">얼음 양을 선택해주세요</div>
+          <div class="button-grid col-1">
+            <button class="btn-huge ice" onclick="saveOption('ice', '보통')">얼음 보통</button>
+            <button class="btn-huge ice" onclick="saveOption('ice', '적게')">얼음 적게</button>
+          </div>
+        `;
+        return;
+      }
+
+      // 옵션 3. 당도 (음료, 티류)
+      if (item.hasSweetnessOption && !opts.find(o => o.type === 'sweetness')) {
+        contentEl.innerHTML = `
+          <div class="step-title">단맛을 조절해 주세요</div>
+          <div class="button-grid col-1">
+            <button class="btn-huge primary" onclick="saveOption('sweetness', '기본')">기본 (원래대로)</button>
+            <button class="btn-huge secondary" onclick="saveOption('sweetness', '덜달게')">덜 달게</button>
+          </div>
+        `;
+        return;
+      }
+
+      // 옵션 4. 색상 (상품/텀블러)
+      if (item.hasColorOption && !opts.find(o => o.type === 'color')) {
+        contentEl.innerHTML = `
+          <div class="step-title">상품 색상을 선택해주세요</div>
+          <div class="button-grid col-1">
+            <button class="btn-huge" style="background: var(--mega-yellow); border-color: var(--mega-yellow);" onclick="saveOption('color', '노란색')">노란색</button>
+            <button class="btn-huge" style="background: #333; color: white; border-color: #333;" onclick="saveOption('color', '검은색')">검은색</button>
+          </div>
+        `;
+        return;
+      }
+
+      // 모든 옵션을 골랐으면 개수 조절 없이 바로 1개 담기
+      finalizeAddToCart();
+    }
+
+    function saveOption(type, value) {
+      orderState.tempMenu.options.push({ type, value });
+      nextOptionStep();
+    }
+
+    function finalizeAddToCart() {
+      let item = orderState.tempMenu.item;
+      let opts = orderState.tempMenu.options;
+      let finalName = item.name;
+
+      // 온도 표기
+      let temp = opts.find(o => o.type === 'temp')?.value || item.defaultTemp;
+      if (temp) {
+        finalName = '[' + temp + '] ' + finalName;
+      }
+
+      // 세부 옵션 표기
+      let details = [];
+      opts.forEach(o => {
+        if (o.type === 'ice' && o.value === '적게') details.push('얼음 적게');
+        if (o.type === 'sweetness' && o.value === '덜달게') details.push('덜 달게');
+        if (o.type === 'color') details.push(o.value);
+      });
+
+      if (details.length > 0) {
+        finalName += ' (' + details.join(', ') + ')';
+      }
+
+      // 이미 같은 옵션의 메뉴가 장바구니에 있다면 수량만 증가
+      let existingItem = orderState.cart.find(c => c.name === finalName);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        // 없다면 새로 추가 (수량 1)
+        orderState.cart.push({
+          name: finalName,
+          price: item.price,
+          quantity: 1
+        });
+      }
+
+      updateCartUI();
+      // 장바구니 확인(수량 조절) 화면으로 바로 이동
+      renderCartReview();
+    }
+
+    // 5. 장바구니 내역 확인 및 수량 조절 화면 (새로 추가)
+    function renderCartReview() {
+      cartFooterEl.classList.remove('active'); // 전체 화면으로 결제창을 띄우므로 하단 바 숨김
+
+      if (orderState.cart.length === 0) {
+        contentEl.innerHTML = `
+          <div class="message-box">
+            <div class="message-text" style="color:var(--mega-red);">
+              장바구니가 비어 있습니다.
+            </div>
+          </div>
+        `;
+        setTimeout(renderCategory, 2000);
+        return;
+      }
+
+      let totalAmt = orderState.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+      let html = `<div class="step-title">장바구니 확인</div>`;
+      html += `<div class="cart-list">`;
+
+      // 장바구니 아이템들을 리스트로 출력
+      orderState.cart.forEach((cItem, index) => {
+        html += `
+          <div class="cart-item-card">
+            <div class="cart-item-info">
+              <div class="cart-item-name">${cItem.name}</div>
+              <div class="cart-item-price">${formatPrice(cItem.price * cItem.quantity)}</div>
+            </div>
+            <div class="cart-item-qty">
+              <button class="btn-qty-small" onclick="changeCartQuantity(${index}, -1)">-</button>
+              <span class="qty-val">${cItem.quantity}</span>
+              <button class="btn-qty-small" onclick="changeCartQuantity(${index}, 1)">+</button>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      html += `
+        <div style="font-size: 2.8rem; font-weight: 900; color: var(--mega-red); text-align: right; margin-bottom: 20px;">
+          총 결제금액: ${formatPrice(totalAmt)}
+        </div>
+      `;
+
+      html += `
+        <div class="button-grid col-2">
+          <button class="btn-huge secondary" style="font-size:2rem; padding:20px;" onclick="renderCategory()">
+            메뉴 추가하기
+          </button>
+          <button class="btn-huge primary" style="font-size:2rem; padding:20px;" onclick="renderPayment()">
+            결제하기
+          </button>
+        </div>
+      `;
+
+      contentEl.innerHTML = html;
+    }
+
+    // 장바구니 확인 창에서 수량을 조절하는 함수
+    function changeCartQuantity(index, delta) {
+      let item = orderState.cart[index];
+      item.quantity += delta;
+
+      // 개수가 0 이하가 되면 장바구니에서 삭제
+      if (item.quantity <= 0) {
+        orderState.cart.splice(index, 1);
+      }
+
+      updateCartUI();
+      renderCartReview(); // 화면 새로고침
+    }
+
+    // 6. 결제 수단 선택 화면
+    function renderPayment() {
+      cartFooterEl.classList.remove('active');
+      contentEl.innerHTML = `
+        <div class="step-title">어떻게 결제하시겠습니까?</div>
+        <div class="button-grid col-1">
+          <button class="btn-huge primary" onclick="processCardPayment()">
+            카드 결제
+          </button>
+          <button class="btn-huge secondary" onclick="processCashPayment()">
+            현금 결제
+          </button>
+        </div>
+      `;
+    }
+
+    // 7. 카드 결제 진행 화면
+    function processCardPayment() {
+      contentEl.innerHTML = `
+        <div class="message-box">
+          <div class="message-text">
+            <br>아래 카드 리더기에<br>카드를 꽂아주세요.
+          </div>
+          <p style="font-size:2rem; color:var(--mega-red); font-weight:bold; margin-top:20px;">
+            (결제가 진행중입니다...)
+          </p>
+        </div>
+      `;
+      setTimeout(() => {
+        finishOrder("<br>카드 결제가 완료되었습니다.<br>영수증과 번호표를 챙겨주세요.");
+      }, 3000);
+    }
+
+    // 8. 현금 결제 안내 화면
+    function processCashPayment() {
+      contentEl.innerHTML = `
+        <div class="message-box">
+          <div class="message-text">
+            <br>현금 결제는<br>
+            <span style="color:var(--mega-red); font-size:3.5rem;">카운터에서</span><br>
+            결제 부탁드립니다.
+          </div>
+          <p style="font-size:1.8rem; color:#666; margin-top:20px;">
+            직원에게 주문하신 메뉴를 말씀해주세요.
+          </p>
+        </div>
+        <button class="btn-huge primary" style="margin-top:auto;" onclick="resetFlow()">
+          처음으로
+        </button>
+      `;
+    }
+
+    // 9. 주문 완료 화면
+    function finishOrder(msg) {
+      contentEl.innerHTML = `
+        <div class="message-box">
+          <div class="message-text">
+            ${msg}
+          </div>
+        </div>
+      `;
+      setTimeout(resetFlow, 4000);
+    }
+
+    // 초기 실행
+    window.onload = resetFlow;
+
+  </script>
 </body>
+
 </html>
