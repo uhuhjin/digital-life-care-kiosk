@@ -349,7 +349,8 @@
     <!-- 공통 헤더 -->
     <header class="header">
       <div class="header-logo">MEGA MGC COFFEE</div>
-      <button class="btn-home" onclick="resetFlow()">처음으로</button>
+      <!-- 변경됨: 클릭 시 메인 인트로 화면(index.html)으로 이동 -->
+      <button class="btn-home" onclick="window.location.href='index.html'">처음으로</button>
     </header>
 
     <!-- 동적 화면 렌더링 영역 -->
@@ -732,7 +733,8 @@
             직원에게 주문하신 메뉴를 말씀해주세요.
           </p>
         </div>
-        <button class="btn-huge primary" style="margin-top:auto;" onclick="resetFlow()">
+        <!-- 변경됨: 현금 결제 안내 후 index.html로 돌아가기 -->
+        <button class="btn-huge primary" style="margin-top:auto;" onclick="window.location.href='index.html'">
           처음으로
         </button>
       `;
@@ -747,7 +749,10 @@
           </div>
         </div>
       `;
-      setTimeout(resetFlow, 4000);
+      // 변경됨: 4초 뒤 index.html로 자동 이동
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 4000);
     }
 
     // 초기 실행
